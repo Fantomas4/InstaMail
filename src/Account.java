@@ -16,4 +16,13 @@ public class Account {
     public String getUsername() {
         return username;
     }
+
+    public boolean isCorrectPassword(String givenPassword) {
+        // the given password matches the account's actual password
+        return this.password.equals(givenPassword);
+    }
+
+    public List<Email> getMailbox() {
+        return  mailbox;
+    }
 }

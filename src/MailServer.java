@@ -29,7 +29,42 @@ public class MailServer {
         return "account_created_successfully";
     }
 
-    public String login() {
+    public String login(String givenUsername, String givenPassword) {
+
+        // Check whether an account with the given username exists
+        Account matchingAccount = null;
+
+        for (Account account : accountList) {
+            if (account.getUsername().equals(givenUsername)) {
+
+                // An account with the target username exists
+                matchingAccount = account;
+            }
+        }
+
+        if (matchingAccount != null) {
+
+            // Check whether the given password is correct
+            boolean validPassword = matchingAccount.isCorrectPassword(givenPassword);
+
+            if (validPassword) {
+
+                // The given password is valid
+                return "verification_success";
+            } else {
+
+                // The given password is invalid
+                return "invalid_password";
+            }
+        } else {
+
+            // matchingAccount is null, meaning no account exists with the given username
+            return "username_not_found";
+        }
+
+
+
+
 
     }
 
@@ -37,8 +72,9 @@ public class MailServer {
 
     }
 
-    public String showEmails() {
-        // change the return data type
+    public String getEmails() {
+        // replaces the showEmails function in the exercise description
+
     }
 
     public String readEmail(String emailId) {
