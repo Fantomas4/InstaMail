@@ -64,10 +64,6 @@ public class MailServer {
             return "username_not_found";
         }
 
-
-
-
-
     }
 
     public String newEmail() {
@@ -112,6 +108,7 @@ public class MailServer {
             // invalid emailId given
             return "error_invalid_emailId";
         } else {
+            // the given emailId id valid
             Email targetEmail = loggedInUser.getMailbox().get(Integer.parseInt(emailId) - 1);
             String result = targetEmail.getMainbody();
             targetEmail.markAsRead();
@@ -122,7 +119,7 @@ public class MailServer {
     }
 
     public String deleteEmail(String emailId) {
-
+        return loggedInUser.deleteEmail(emailId);
     }
 
     public void logOut() {

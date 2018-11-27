@@ -25,4 +25,19 @@ public class Account {
     public List<Email> getMailbox() {
         return  mailbox;
     }
+
+    public String deleteEmail(String emailId) {
+
+        int targetId = Integer.parseInt(emailId);
+
+        if (targetId < 1 || targetId > mailbox.size()) {
+            // invalid emailId given
+            return "error_invalid_emailId";
+        } else {
+            // the emailId given is valid
+            mailbox.remove(Integer.parseInt(emailId) - 1);
+
+            return "success_valid_emailId";
+        }
+    }
 }
