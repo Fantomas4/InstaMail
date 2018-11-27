@@ -5,6 +5,7 @@ public class MailServer {
 
     int port;
     List<Account> accountList;
+    Account loggedInUser;
 
     public MailServer(int port) {
         this.port = port;
@@ -50,6 +51,7 @@ public class MailServer {
             if (validPassword) {
 
                 // The given password is valid
+                loggedInUser = matchingAccount;
                 return "verification_success";
             } else {
 
@@ -72,13 +74,50 @@ public class MailServer {
 
     }
 
-    public String getEmails() {
-        // replaces the showEmails function in the exercise description
+    public ArrayList<String> getEmailsPreview() {
+        // replaces the showEmails function from the exercise description
+        ArrayList<String> emailDescriptions = new ArrayList<>();
+
+        int mailId = 1;
+        String newStatus;
+        String sender;
+        String subject;
+
+        for (Email mail : loggedInUser.getMailbox()) {
+
+            if (mail.isNew()) {
+                newStatus = "[ New ]";
+            } else {
+                newStatus = "       ";
+            }
+
+            sender = mail.getSender();
+            subject = mail.getSubject();
+
+            String result = mailId + "." + " " + newStatus + " " + sender + "      " + subject;
+            emailDescriptions.add(result);
+
+            mailId += 1;
+        }
+
+        return emailDescriptions;
 
     }
 
-    public String readEmail(String emailId) {
+    public String getEmail(String emailId) {
+        // replaces the readEMail function from the exercise description
+        int targetId = Integer.parseInt(emailId);
 
+        if (targetId < 1 || targetId > loggedInUser.getMailbox().size()) {
+            // invalid emailId given
+            return "error_invalid_emailId";
+        } else {
+            Email targetEmail = loggedInUser.getMailbox().get(Integer.parseInt(emailId) - 1);
+            String result = targetEmail.getMainbody();
+            targetEmail.markAsRead();
+
+            return result;
+        }
 
     }
 
