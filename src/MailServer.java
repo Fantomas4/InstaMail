@@ -36,7 +36,7 @@ public class MailServer {
                 // create a new Client object, pass it to a new client thread,
                 // start the client thread and then add
                 // it to the clientThreads list
-                Thread clientThread = new Thread(new ClientThread(clientSocket));
+                Thread clientThread = new Thread(new ClientThread(clientSocket, this));
                 clientThread.start();
                 clientThreads.add(clientThread);
             } catch (IOException e) {
