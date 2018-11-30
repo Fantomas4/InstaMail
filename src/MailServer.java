@@ -1,15 +1,50 @@
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MailServer {
 
-    int port;
-    List<Account> accountList;
-    Account loggedInUser;
+    private int handshakePort;
+    private ArrayList<Account> accountList;
+    private Account loggedInUser;
+    private ServerSocket serverSocket;
+    private ArrayList<Socket> clientSockets;
+    private ArrayList<Thread> clientThreads;
+
 
     public MailServer(int port) {
-        this.port = port;
+        handshakePort = port;
         accountList = new ArrayList<>();
+        try {
+            serverSocket = new ServerSocket();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void handshakeListeningThread() {
+
+        while (true) {
+            try {
+                // accept an incoming handshake from a new client,
+                // and create a new socket for this particular client
+                Socket clientSocket = serverSocket.accept();
+
+                // create a new Client object, pass it to a new client thread,
+                // start the client thread and then add
+                // it to the clientThreads list
+                Thread clientThread = new Thread(new ClientThread(clientSocket));
+                clientThread.start();
+                clientThreads.add(clientThread);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
     }
 
     public String register(String username, String password) {
