@@ -8,7 +8,6 @@ public class MailServer {
 
     private int handshakePort;
     private ArrayList<Account> accountList;
-    private Account loggedInUser;
     private ServerSocket serverSocket;
     private ArrayList<Socket> clientSockets;
     private ArrayList<Thread> clientThreads;
@@ -45,6 +44,19 @@ public class MailServer {
 
         }
 
+    }
+
+    public Account getUserAccount(String username) {
+
+        Account target = null;
+
+        for (Account account : accountList) {
+            if (account.getUsername().equals(username)) {
+                target = account;
+            }
+        }
+
+        return target;
     }
 
     public String register(String username, String password) {
@@ -84,28 +96,43 @@ public class MailServer {
             boolean validPassword = matchingAccount.isCorrectPassword(givenPassword);
 
             if (validPassword) {
-
                 // The given password is valid
-                loggedInUser = matchingAccount;
                 return "verification_success";
             } else {
-
                 // The given password is invalid
                 return "invalid_password";
             }
         } else {
-
             // matchingAccount is null, meaning no account exists with the given username
             return "username_not_found";
         }
 
     }
 
-    public String newEmail() {
+    public String newEmail(String senderUsername,String receiverUsername, String subject, String mainBody) {
+
+        Account target = null;
+
+        // check whether the receiver exists as a valid user
+        for (Account account : accountList) {
+            if (account.getUsername().equals(receiverUsername)) {
+                target = account;
+                break;
+            }
+        }
+
+        if (target != null) {
+            // receiver is valid (username exists)
+            target.addNewEmail(new Email(senderUsername, receiverUsername, subject, mainBody));
+            return "email_sent_successfully";
+        } else {
+            // receiver is not valid (a user with the given username does not exist)
+            return "error_receiver_not_valid";
+        }
 
     }
 
-    public ArrayList<String> getEmailsPreview() {
+    public ArrayList<String> getEmailsPreview(Account user) {
         // replaces the showEmails function from the exercise description
         ArrayList<String> emailDescriptions = new ArrayList<>();
 
@@ -114,7 +141,7 @@ public class MailServer {
         String sender;
         String subject;
 
-        for (Email mail : loggedInUser.getMailbox()) {
+        for (Email mail : user.getMailbox()) {
 
             if (mail.isNew()) {
                 newStatus = "[ New ]";
@@ -135,16 +162,16 @@ public class MailServer {
 
     }
 
-    public String getEmail(String emailId) {
+    public String getEmail(String emailId, Account user) {
         // replaces the readEMail function from the exercise description
         int targetId = Integer.parseInt(emailId);
 
-        if (targetId < 1 || targetId > loggedInUser.getMailbox().size()) {
+        if (targetId < 1 || targetId > user.getMailbox().size()) {
             // invalid emailId given
             return "error_invalid_emailId";
         } else {
             // the given emailId id valid
-            Email targetEmail = loggedInUser.getMailbox().get(Integer.parseInt(emailId) - 1);
+            Email targetEmail = user.getMailbox().get(Integer.parseInt(emailId) - 1);
             String result = targetEmail.getMainbody();
             targetEmail.markAsRead();
 
@@ -153,8 +180,8 @@ public class MailServer {
 
     }
 
-    public String deleteEmail(String emailId) {
-        return loggedInUser.deleteEmail(emailId);
+    public String deleteEmail(String emailId, Account user) {
+        return user.deleteEmail(emailId);
     }
 
     public void logOut() {

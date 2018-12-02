@@ -26,6 +26,10 @@ public class Account {
         return  mailbox;
     }
 
+    public void addNewEmail(Email email) {
+        mailbox.add(email);
+    }
+
     public String deleteEmail(String emailId) {
 
         int targetId = Integer.parseInt(emailId);
