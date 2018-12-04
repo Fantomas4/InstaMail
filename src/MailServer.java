@@ -17,7 +17,7 @@ public class MailServer {
         handshakePort = port;
         accountList = new ArrayList<>();
         try {
-            serverSocket = new ServerSocket();
+            serverSocket = new ServerSocket(handshakePort);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -56,7 +56,7 @@ public class MailServer {
         private Account loggedInUser;
         boolean stopListening;
 
-        public RequestServiceThread(Socket socket) {
+        private RequestServiceThread(Socket socket) {
 
             reqSocket = socket;
             loggedInUser = null;
@@ -124,6 +124,35 @@ public class MailServer {
                             e.printStackTrace();
                         }
 
+                    case "register_request":
+                        String username = "no_username";
+                        String password = "no_password";
+
+                        try {
+                            out.writeUTF("Enter a username: ");
+                            username = in.readUTF();
+                            out.writeUTF("Enter a password: ");
+                            password = in.readUTF();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        if (register(username, password).equals("account_created_successfully")) {
+                            try {
+                                out.writeUTF("Account created successfully!");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        } else if (register(username, password).equals("error_username_already_exists")) {
+                            try {
+                                out.writeUTF("Error! Username already exists!");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+
+                        break;
 
                     case "new_email_creation_request":
 
@@ -267,7 +296,7 @@ public class MailServer {
 
         }
 
-        public Account getUserAccount(String username) {
+        private Account getUserAccount(String username) {
 
             Account target = null;
 
@@ -280,7 +309,7 @@ public class MailServer {
             return target;
         }
 
-        public String register(String username, String password) {
+        private String register(String username, String password) {
 
             // Check whether the username already exists
             for (Account account : accountList) {
@@ -298,7 +327,7 @@ public class MailServer {
             return "account_created_successfully";
         }
 
-        public String login(String givenUsername, String givenPassword) {
+        private String login(String givenUsername, String givenPassword) {
 
             // Check whether an account with the given username exists
             Account matchingAccount = null;
@@ -318,6 +347,7 @@ public class MailServer {
 
                 if (validPassword) {
                     // The given password is valid
+                    loggedInUser = matchingAccount;
                     return "verification_success";
                 } else {
                     // The given password is invalid
@@ -330,7 +360,7 @@ public class MailServer {
 
         }
 
-        public String newEmail(String senderUsername, String receiverUsername, String subject, String mainBody) {
+        private String newEmail(String senderUsername, String receiverUsername, String subject, String mainBody) {
 
             Account target = null;
 
@@ -353,7 +383,7 @@ public class MailServer {
 
         }
 
-        public ArrayList<String> getEmailsPreview(Account user) {
+        private ArrayList<String> getEmailsPreview(Account user) {
             // replaces the showEmails function from the exercise description
             ArrayList<String> emailDescriptions = new ArrayList<>();
 
@@ -383,7 +413,7 @@ public class MailServer {
 
         }
 
-        public String getEmail(String emailId, Account user) {
+        private String getEmail(String emailId, Account user) {
             // replaces the readEMail function from the exercise description
             int targetId = Integer.parseInt(emailId);
 
@@ -401,11 +431,11 @@ public class MailServer {
 
         }
 
-        public String deleteEmail(String emailId, Account user) {
+        private String deleteEmail(String emailId, Account user) {
             return user.deleteEmail(emailId);
         }
 
-        public void logOut() {
+        private void logOut() {
 
             // NOTE: outer class method directly
             // accesses and changes inner class private variable
@@ -414,14 +444,16 @@ public class MailServer {
             loggedInUser = null;
         }
 
-        public void exit() {
+        private void exit() {
             stopListening = true;
         }
 
     }
 
+    public static void main(String[] args) {
 
+        new MailServer(5678);
 
-
+    }
 
 }
