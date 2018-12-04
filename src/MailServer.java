@@ -1,3 +1,5 @@
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -9,9 +11,7 @@ public class MailServer {
     private int handshakePort;
     private ArrayList<Account> accountList;
     private ServerSocket serverSocket;
-    private ArrayList<Socket> clientSockets;
-    private ArrayList<Thread> clientThreads;
-
+    private ArrayList<Thread> requestServiceThreads;
 
     public MailServer(int port) {
         handshakePort = port;
@@ -22,6 +22,229 @@ public class MailServer {
             e.printStackTrace();
         }
 
+        handshakeListeningThread();
+
+    }
+
+    private class RequestServiceThread implements Runnable {
+
+        private Socket reqSocket;
+        private DataInputStream in;
+        private DataOutputStream out;
+        private Account loggedInUser;
+        boolean stopListening;
+
+        public RequestServiceThread(Socket socket) {
+
+            reqSocket = socket;
+            loggedInUser = null;
+
+            try {
+                in = new DataInputStream(socket.getInputStream());
+                out = new DataOutputStream(socket.getOutputStream());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            stopListening = false;
+
+            run();
+        }
+
+        public void run() {
+
+            // send a message to the client
+            // in order to inform him that his
+            // connection request
+            // was accepted successfully
+
+            try {
+                out.writeUTF("connection_successful");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            while (!stopListening) {
+
+                String receivedMsg = "";
+
+                try {
+                    receivedMsg = in.readUTF();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                switch (receivedMsg) {
+
+                    case "login_request":
+                        try {
+                            out.writeUTF("Type your username: ");
+                            String recvUsername = in.readUTF();
+                            out.writeUTF("Type your password: ");
+                            String recvPassword = in.readUTF();
+
+                            String result = login(recvUsername, recvPassword);
+
+                            switch (result) {
+                                case "verification_success":
+                                    loggedInUser = getUserAccount(recvUsername);
+                                    out.writeUTF("Welcome back " + recvUsername + "!");
+                                    break;
+                                case "username_not_found":
+                                    out.writeUTF("Error: Username does not exist!");
+                                    break;
+                                case "invalid_password":
+                                    out.writeUTF("Error: Wrong password!");
+                                    break;
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    case "new_email_creation_request":
+
+                        String receiver = "no_user";
+                        String subject = "no_subject";
+                        String mainBody = "no_main_body";
+
+                        try {
+                            out.writeUTF("Receiver: ");
+                            receiver = in.readUTF();
+                            out.writeUTF("Subject: ");
+                            subject = in.readUTF();
+                            out.writeUTF("Main body: ");
+                            mainBody = in.readUTF();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        String result = newEmail(loggedInUser.getUsername(), receiver, subject, mainBody);
+
+                        if (result.equals("email_sent_successfully")) {
+                            try {
+                                out.writeUTF("Mail sent successfully!");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        } else if (result.equals("error_receiver_not_valid")) {
+                            try {
+                                out.writeUTF("Error! Invalid receiver!");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        break;
+
+                    case "get_emails_preview_request":
+                        ArrayList<String> previewEntries = getEmailsPreview(loggedInUser);
+                        StringBuilder sb = new StringBuilder();
+
+                        // convert the ArrayList<String> to a String containing
+                        // the preview's entries
+                        for (String entry : previewEntries) {
+                            sb.append(entry);
+                            sb.append("\n");
+                        }
+
+                        try {
+                            out.writeUTF(sb.toString());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        break;
+
+                    case "get_complete_email_request":
+
+                        String emailId = "no_id";
+
+                        try {
+                            out.writeUTF("Enter the email's ID: ");
+                            emailId = in.readUTF();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        String emailResult = getEmail(emailId, loggedInUser);
+
+                        if (emailResult.equals("error_invalid_emailId")) {
+                            try {
+                                out.writeUTF("Error! Email ID not found!");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            try {
+                                out.writeUTF(emailResult);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        break;
+
+                    case "delete_email_request":
+
+                        String deleteId = "-1";
+
+                        try {
+                            out.writeUTF("Enter the email's ID: ");
+                            deleteId = in.readUTF();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        String deleteResult = deleteEmail(deleteId, loggedInUser);
+
+                        if (deleteResult.equals("error_invalid_emailId")) {
+                            try {
+                                out.writeUTF("Email deleted successfully!");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        } else if (deleteResult.equals("success_valid_emailId")) {
+                            try {
+                                out.writeUTF("Error! Invalid email id!");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                    case "logout_request":
+                        logOut();
+
+                        break;
+
+                    case "exit_request":
+                        exit();
+
+                        break;
+
+                }
+
+                // send the appropriate menu an the end of the
+                // current request handling
+                String menuOptions;
+                // send the menu options to the client after completing his request
+                if (loggedInUser != null) {
+                    // the thread handles requests from a logged in user
+                    menuOptions = "===============\n> NewEmail\n> ShowEmails\n> ReadEmail\n> DeleteEmail\n> LogOut\n> Exit\n===============";
+                } else {
+                    // the thread handles requests from a guest user
+                    menuOptions = "==========\n> LogIn\n> Register\n> Exit";
+                }
+
+                try {
+                    out.writeUTF(menuOptions);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+        }
+
     }
 
     private void handshakeListeningThread() {
@@ -30,14 +253,14 @@ public class MailServer {
             try {
                 // accept an incoming handshake from a new client,
                 // and create a new socket for this particular client
-                Socket clientSocket = serverSocket.accept();
+                Socket serviceSocket = serverSocket.accept();
 
-                // create a new Client object, pass it to a new client thread,
-                // start the client thread and then add
+                // create a new RequestServiceThread object, pass it to a new serviceThread,
+                // start the serviceThread and then add
                 // it to the clientThreads list
-                Thread clientThread = new Thread(new ClientThread(clientSocket, this));
-                clientThread.start();
-                clientThreads.add(clientThread);
+                Thread serviceThread = new Thread(new RequestServiceThread(serviceSocket));
+                serviceThread.start();
+                requestServiceThreads.add(serviceThread);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -109,7 +332,7 @@ public class MailServer {
 
     }
 
-    public String newEmail(String senderUsername,String receiverUsername, String subject, String mainBody) {
+    public String newEmail(String senderUsername, String receiverUsername, String subject, String mainBody) {
 
         Account target = null;
 
@@ -184,11 +407,17 @@ public class MailServer {
         return user.deleteEmail(emailId);
     }
 
-    public void logOut() {
+    public void logOut(RequestServiceThread userThread) {
 
+        // NOTE: outer class method directly
+        // accesses and changes inner class private variable
+
+        // log out the currently logged in user
+        loggedInUser = null;
     }
 
     public void exit() {
 
     }
+
 }
