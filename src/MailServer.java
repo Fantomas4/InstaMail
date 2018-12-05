@@ -14,6 +14,7 @@ public class MailServer {
     private ArrayList<Thread> requestServiceThreads;
 
     public MailServer(int port) {
+        System.out.println("DIAG: eftasa0");
         handshakePort = port;
         accountList = new ArrayList<>();
         try {
@@ -119,7 +120,9 @@ public class MailServer {
                         try {
                             out.writeUTF("Type your username: ");
                             String recvUsername = in.readUTF();
+                            System.out.println("DIAG: eftasa1");
                             out.writeUTF("Type your password: ");
+                            System.out.println("DIAG: eftasa2");
                             String recvPassword = in.readUTF();
 
                             String result = login(recvUsername, recvPassword);

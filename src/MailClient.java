@@ -22,6 +22,8 @@ public class MailClient {
             e.printStackTrace();
         }
 
+        run();
+
     }
 
     // gets the user input choice and returns the appropriate
@@ -60,7 +62,7 @@ public class MailClient {
         return requestMsg;
     }
 
-    private void sendRequestThread() {
+    private void run() {
 
         String recvMsg = "no_msg";
         String reqMsg = "no_request";
