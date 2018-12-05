@@ -86,9 +86,26 @@ public class MailServer {
                 e.printStackTrace();
             }
 
+            String receivedMsg = "no_msg";
+
             while (!stopListening) {
 
-                String receivedMsg = "";
+                // send the appropriate menu to the client
+                String menuOptions;
+                // send the menu options to the client after completing his request
+                if (loggedInUser != null) {
+                    // the thread handles requests from a logged in user
+                    menuOptions = "===============\n> NewEmail\n> ShowEmails\n> ReadEmail\n> DeleteEmail\n> LogOut\n> Exit\n===============";
+                } else {
+                    // the thread handles requests from a guest user
+                    menuOptions = "==========\n> LogIn\n> Register\n> Exit";
+                }
+
+                try {
+                    out.writeUTF(menuOptions);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
                 try {
                     receivedMsg = in.readUTF();
@@ -272,24 +289,6 @@ public class MailServer {
 
                         break;
 
-                }
-
-                // send the appropriate menu an the end of the
-                // current request handling
-                String menuOptions;
-                // send the menu options to the client after completing his request
-                if (loggedInUser != null) {
-                    // the thread handles requests from a logged in user
-                    menuOptions = "===============\n> NewEmail\n> ShowEmails\n> ReadEmail\n> DeleteEmail\n> LogOut\n> Exit\n===============";
-                } else {
-                    // the thread handles requests from a guest user
-                    menuOptions = "==========\n> LogIn\n> Register\n> Exit";
-                }
-
-                try {
-                    out.writeUTF(menuOptions);
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
 
             }
