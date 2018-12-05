@@ -111,11 +111,78 @@ public class MailClient {
             System.out.println(recvMsg);
 
             // depending on the user's type of chosen function,
+            // print the appropriate received messages,
             // send the appropriate follow up requests and receive
             // the needed responses
-            if (userChoice.equals("LogIn"))
+            switch (userChoice) {
 
-            if (reqMsg.equals("Exit")) {
+                case "LogIn":
+                case "SignUp":
+
+                    try {
+                        // give username
+                        System.out.println(in.readUTF());
+                        out.writeUTF(input.next());
+                        // give password
+                        System.out.println(in.readUTF());
+                        out.writeUTF(input.next());
+                        // get and print result from server
+                        System.out.println(in.readUTF());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    break;
+                case "NewEmail":
+
+                    try {
+                        // print "Receiver: "
+                        System.out.println(in.readUTF());
+                        // give receiver
+                        out.writeUTF(input.next());
+                        // print "Subject: "
+                        System.out.println(in.readUTF());
+                        // give subject
+                        out.writeUTF(input.next());
+                        // print "Main body: "
+                        System.out.println(in.readUTF());
+                        // give main body
+                        out.writeUTF(input.next());
+                        // get and print result from server
+                        System.out.println(in.readUTF());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    break;
+                case "ShowEmails":
+
+                    try {
+                        // get and print result from server
+                        System.out.println(in.readUTF());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    break;
+                case "ReadEmail":
+                case "DeleteEmail":
+
+                    try {
+                        // print "Enter the email's ID: "
+                        System.out.println(in.readUTF());
+                        // give the id
+                        out.writeUTF(input.next());
+                        // get and print result from server
+                        System.out.println(in.readUTF());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    break;
+            }
+
+            if (userChoice.equals("Exit")) {
                 stopListening = true;
             }
 
