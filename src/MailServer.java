@@ -1,6 +1,4 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -52,8 +50,8 @@ public class MailServer {
     private class RequestServiceThread implements Runnable {
 
         private Socket reqSocket;
-        private DataInputStream in;
-        private DataOutputStream out;
+        private BufferedReader in;
+        private PrintWriter out;
         private Account loggedInUser;
         boolean stopListening;
 
@@ -63,8 +61,8 @@ public class MailServer {
             loggedInUser = null;
 
             try {
-                in = new DataInputStream(socket.getInputStream());
-                out = new DataOutputStream(socket.getOutputStream());
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new PrintWriter(socket.getOutputStream(), true);
             } catch (IOException e) {
                 e.printStackTrace();
             }
