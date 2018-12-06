@@ -1,4 +1,6 @@
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -50,8 +52,8 @@ public class MailServer {
     private class RequestServiceThread implements Runnable {
 
         private Socket reqSocket;
-        private BufferedReader in;
-        private PrintWriter out;
+        private DataInputStream in;
+        private DataOutputStream out;
         private Account loggedInUser;
         boolean stopListening;
 
@@ -61,8 +63,8 @@ public class MailServer {
             loggedInUser = null;
 
             try {
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                out = new PrintWriter(socket.getOutputStream(), true);
+                in = new DataInputStream(socket.getInputStream());
+                out = new DataOutputStream(socket.getOutputStream());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -79,7 +81,12 @@ public class MailServer {
             // connection request
             // was accepted successfully
 
-            out.println("connection_successful");
+            try {
+                out.writeUTF("connection_successful");
+                out.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             String receivedMsg = "no_msg";
 
@@ -96,10 +103,15 @@ public class MailServer {
                     menuOptions = "==========\n> LogIn\n> Register\n> Exit";
                 }
 
-                out.println(menuOptions);
+                try {
+                    out.writeUTF(menuOptions);
+                    out.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
                 try {
-                    receivedMsg = in.readLine();
+                    receivedMsg = in.readUTF();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -108,25 +120,30 @@ public class MailServer {
 
                     case "login_request":
                         try {
-                            out.println("Type your username: ");
-                            String recvUsername = in.readLine();
+                            out.writeUTF("Type your username: ");
+                            out.flush();
+                            String recvUsername = in.readUTF();
                             System.out.println("DIAG: eftasa1");
-                            out.println("Type your password: ");
+                            out.writeUTF("Type your password: ");
+                            out.flush();
                             System.out.println("DIAG: eftasa2");
-                            String recvPassword = in.readLine();
+                            String recvPassword = in.readUTF();
 
                             String result = login(recvUsername, recvPassword);
 
                             switch (result) {
                                 case "verification_success":
                                     loggedInUser = getUserAccount(recvUsername);
-                                    out.println("Welcome back " + recvUsername + "!");
+                                    out.writeUTF("Welcome back " + recvUsername + "!");
+                                    out.flush();
                                     break;
                                 case "username_not_found":
-                                    out.println("Error: Username does not exist!");
+                                    out.writeUTF("Error: Username does not exist!");
+                                    out.flush();
                                     break;
                                 case "invalid_password":
-                                    out.println("Error: Wrong password!");
+                                    out.writeUTF("Error: Wrong password!");
+                                    out.flush();
                                     break;
                             }
 
@@ -139,18 +156,30 @@ public class MailServer {
                         String password = "no_password";
 
                         try {
-                            out.println("Enter a username: ");
-                            username = in.readLine();
-                            out.println("Enter a password: ");
-                            password = in.readLine();
+                            out.writeUTF("Enter a username: ");
+                            out.flush();
+                            username = in.readUTF();
+                            out.writeUTF("Enter a password: ");
+                            out.flush();
+                            password = in.readUTF();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
 
                         if (register(username, password).equals("account_created_successfully")) {
-                            out.println("Account created successfully!");
+                            try {
+                                out.writeUTF("Account created successfully!");
+                                out.flush();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         } else if (register(username, password).equals("error_username_already_exists")) {
-                            out.println("Error! Username already exists!");
+                            try {
+                                out.writeUTF("Error! Username already exists!");
+                                out.flush();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
 
 
@@ -163,21 +192,34 @@ public class MailServer {
                         String mainBody = "no_main_body";
 
                         try {
-                            out.println("Receiver: ");
-                            receiver = in.readLine();
-                            out.println("Subject: ");
-                            subject = in.readLine();
-                            out.println("Main body: ");
-                            mainBody = in.readLine();
+                            out.writeUTF("Receiver: ");
+                            out.flush();
+                            receiver = in.readUTF();
+                            out.writeUTF("Subject: ");
+                            out.flush();
+                            subject = in.readUTF();
+                            out.writeUTF("Main body: ");
+                            out.flush();
+                            mainBody = in.readUTF();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                         String result = newEmail(loggedInUser.getUsername(), receiver, subject, mainBody);
 
                         if (result.equals("email_sent_successfully")) {
-                            out.println("Mail sent successfully!");
+                            try {
+                                out.writeUTF("Mail sent successfully!");
+                                out.flush();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         } else if (result.equals("error_receiver_not_valid")) {
-                            out.println("Error! Invalid receiver!");
+                            try {
+                                out.writeUTF("Error! Invalid receiver!");
+                                out.flush();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
 
                         break;
@@ -193,7 +235,12 @@ public class MailServer {
                             sb.append("\n");
                         }
 
-                        out.println(sb.toString());
+                        try {
+                            out.writeUTF(sb.toString());
+                            out.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
                         break;
 
@@ -202,17 +249,28 @@ public class MailServer {
                         String emailId = "no_id";
 
                         try {
-                            out.println("Enter the email's ID: ");
-                            emailId = in.readLine();
+                            out.writeUTF("Enter the email's ID: ");
+                            out.flush();
+                            emailId = in.readUTF();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                         String emailResult = getEmail(emailId, loggedInUser);
 
                         if (emailResult.equals("error_invalid_emailId")) {
-                            out.println("Error! Email ID not found!");
+                            try {
+                                out.writeUTF("Error! Email ID not found!");
+                                out.flush();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         } else {
-                            out.println(emailResult);
+                            try {
+                                out.writeUTF(emailResult);
+                                out.flush();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
 
                         break;
@@ -222,8 +280,9 @@ public class MailServer {
                         String deleteId = "-1";
 
                         try {
-                            out.println("Enter the email's ID: ");
-                            deleteId = in.readLine();
+                            out.writeUTF("Enter the email's ID: ");
+                            out.flush();
+                            deleteId = in.readUTF();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -231,9 +290,19 @@ public class MailServer {
                         String deleteResult = deleteEmail(deleteId, loggedInUser);
 
                         if (deleteResult.equals("error_invalid_emailId")) {
-                            out.println("Email deleted successfully!");
+                            try {
+                                out.writeUTF("Email deleted successfully!");
+                                out.flush();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         } else if (deleteResult.equals("success_valid_emailId")) {
-                            out.println("Error! Invalid email id!");
+                            try {
+                                out.writeUTF("Error! Invalid email id!");
+                                out.flush();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
 
                     case "logout_request":

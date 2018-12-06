@@ -1,22 +1,20 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class MailClient {
 
     private Socket socket;
-    private DataInputStream in;
-    private DataOutputStream out;
+    private BufferedReader in;
+    private PrintWriter out;
     private boolean stopListening;
 
     public MailClient(String ipAddr, int port) {
 
         try {
             socket = new Socket(ipAddr, port);
-            in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
             stopListening = false;
         } catch (IOException e) {
             e.printStackTrace();
@@ -71,11 +69,13 @@ public class MailClient {
         String userChoice;
 
         try {
-            recvMsg = in.readUTF();
+            recvMsg = in.readLine();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        System.out.println("cl p1");
+        System.out.println(recvMsg);
         if (recvMsg.equals("connection_successful")) {
             System.out.println("> Connected to MailServer!");
         }
@@ -84,7 +84,7 @@ public class MailClient {
 
             // get the appropriate menu from the server
             try {
-                recvMsg = in.readUTF();
+                recvMsg = in.readLine();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -102,8 +102,8 @@ public class MailClient {
 
             // send the formed request message to the server
             try {
-                out.writeUTF(reqMsg);
-                recvMsg = in.readUTF();
+                out.println(reqMsg);
+                recvMsg = in.readLine();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -123,13 +123,13 @@ public class MailClient {
 
                     try {
                         // give username
-                        System.out.println(in.readUTF());
-                        out.writeUTF(input.next());
+                        System.out.println(in.readLine());
+                        out.println(input.next());
                         // give password
-                        System.out.println(in.readUTF());
-                        out.writeUTF(input.next());
+                        System.out.println(in.readLine());
+                        out.println(input.next());
                         // get and print result from server
-                        System.out.println(in.readUTF());
+                        System.out.println(in.readLine());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -139,19 +139,19 @@ public class MailClient {
 
                     try {
                         // print "Receiver: "
-                        System.out.println(in.readUTF());
+                        System.out.println(in.readLine());
                         // give receiver
-                        out.writeUTF(input.next());
+                        out.println(input.next());
                         // print "Subject: "
-                        System.out.println(in.readUTF());
+                        System.out.println(in.readLine());
                         // give subject
-                        out.writeUTF(input.next());
+                        out.println(input.next());
                         // print "Main body: "
-                        System.out.println(in.readUTF());
+                        System.out.println(in.readLine());
                         // give main body
-                        out.writeUTF(input.next());
+                        out.println(input.next());
                         // get and print result from server
-                        System.out.println(in.readUTF());
+                        System.out.println(in.readLine());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -161,7 +161,7 @@ public class MailClient {
 
                     try {
                         // get and print result from server
-                        System.out.println(in.readUTF());
+                        System.out.println(in.readLine());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -172,11 +172,11 @@ public class MailClient {
 
                     try {
                         // print "Enter the email's ID: "
-                        System.out.println(in.readUTF());
+                        System.out.println(in.readLine());
                         // give the id
-                        out.writeUTF(input.next());
+                        out.println(input.next());
                         // get and print result from server
-                        System.out.println(in.readUTF());
+                        System.out.println(in.readLine());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
