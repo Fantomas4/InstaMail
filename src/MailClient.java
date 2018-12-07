@@ -60,6 +60,35 @@ public class MailClient {
         return requestMsg;
     }
 
+    public String receiveCompleteMsg() {
+
+        String temp;
+        String finalMsg = "";
+
+        try {
+            while (true) {
+
+                temp = in.readLine();
+                System.out.println("temp: " + temp);
+
+                if (temp == null) {
+                    System.out.println("Mpika break!");
+                    break;
+                } else {
+                    finalMsg += temp;
+                }
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(finalMsg);
+
+        return finalMsg;
+
+    }
+
     private void run() {
 
         String recvMsg = "no_msg";
@@ -68,14 +97,8 @@ public class MailClient {
         Scanner input = new Scanner(System.in);
         String userChoice;
 
-        try {
-            recvMsg = in.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        recvMsg = receiveCompleteMsg();
 
-        System.out.println("cl p1");
-        System.out.println(recvMsg);
         if (recvMsg.equals("connection_successful")) {
             System.out.println("> Connected to MailServer!");
         }
