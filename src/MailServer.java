@@ -133,6 +133,7 @@ public class MailServer {
                                 System.out.println("DIAG: username: " + recvUsername + " password: " + recvPassword);
                                 System.out.println("DIAG: result: " + result);
 
+                                out.writeUTF("LOGIN_AUTH");
                                 switch (result) {
                                     case "VERIFICATION_SUCCESS":
                                         loggedInUser = getUserAccount(recvUsername);
@@ -153,7 +154,7 @@ public class MailServer {
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-
+                            break;
                         case "REGISTER_REQUEST":
                             String username = "NO_USERNAME";
                             String password = "NO_PASSWORD";
@@ -255,6 +256,8 @@ public class MailServer {
                             } else if (deleteResult.equals("ERROR_INVALID_EMAIL_ID")) {
                                 out.writeUTF("Error! Invalid email id!");
                             }
+
+                            break;
 
                         case "LOGOUT_REQUEST":
                             logOut();

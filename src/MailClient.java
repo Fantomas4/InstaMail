@@ -91,9 +91,6 @@ public class MailClient {
 
     private void run() {
 
-//        String recvMsg = "no_msg";
-//        String reqMsg = "no_request";
-//        String serverResponse = "no_response";
         Scanner input = new Scanner(System.in);
         String userChoice;
 
@@ -101,33 +98,15 @@ public class MailClient {
 
         String receivedMsg = "NO_MESSAGE";
 
-//        // get connection status response from server
-//        try {
-//            receivedMsg = in.readUTF();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        if (receivedMsg.equals("CONNECTION_SUCCESSFUL")) {
-//            System.out.println("> Connected to MailServer!");
-//            try {
-//                out.writeUTF("GET_MENU_REQUEST");
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
         try {
 
             while (!stopListening) {
-                System.out.println("Client point 1");
                 // the first readUTF() gets the CONTEXT of the request
                 // example: LOGIN_AUTH
                 // Based on the context of the request, there are
                 // follow up readUTF() commands that get the CONTENT of
                 // the request.
                 receivedMsg = in.readUTF();
-                System.out.println("Client point 2");
                 System.out.println("DIAG: receivedMsg: " + receivedMsg);
 //                // test DELETE *****
 //                receivedMsg = in.readUTF();
@@ -148,15 +127,19 @@ public class MailClient {
 
                 } else if (receivedMsg.equals("LOGIN_AUTH")) {
                     receivedMsg = in.readUTF();
-                    System.out.println(receivedMsg);
                     if (receivedMsg.equals("Type your username:")) {
 //                    out.writeUTF("fantom");
+                        System.out.println(receivedMsg);
                         out.writeUTF(input.next());
                         out.flush();
                     } else if (receivedMsg.equals("Type your password:")) {
 //                    out.writeUTF("mypass");
+                        System.out.println(receivedMsg);
                         out.writeUTF(input.next());
                         out.flush();
+                    } else {
+                        // the receivedMsg contains the authentication result report
+                        System.out.println(receivedMsg);
                     }
                 }
 
