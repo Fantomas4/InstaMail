@@ -5,16 +5,16 @@ import java.util.Scanner;
 public class MailClient {
 
     private Socket socket;
-    private BufferedReader in;
-    private PrintWriter out;
+    private DataInputStream in;
+    private DataOutputStream out;
     private boolean stopListening;
 
     public MailClient(String ipAddr, int port) {
 
         try {
             socket = new Socket(ipAddr, port);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream(socket.getOutputStream());
             stopListening = false;
         } catch (IOException e) {
             e.printStackTrace();
@@ -28,32 +28,32 @@ public class MailClient {
     // request message form
     private String createRequestMessage(String choice) {
 
-        String requestMsg = "no_msg";
+        String requestMsg = "NO_MESSAGE";
 
         switch (choice) {
             case "LogIn":
-                requestMsg = "login_request";
+                requestMsg = "LOGIN_REQUEST";
                 break;
             case "SignUp":
-                requestMsg =  "register_request";
+                requestMsg =  "REGISTER_REQUEST";
                 break;
             case "Exit":
-                requestMsg =  "exit_request";
+                requestMsg =  "EXIT_REQUEST";
                 break;
             case "NewEmail":
-                requestMsg =  "new_email_creation_request";
+                requestMsg =  "NEW_EMAIL_CREATION_REQUEST";
                 break;
             case "ShowEmails":
-                requestMsg =  "get_emails_preview_request";
+                requestMsg =  "GET_EMAILS_PREVIEW_REQUEST";
                 break;
             case "ReadEmail":
-                requestMsg =  "get_complete_email_request";
+                requestMsg =  "GET_COMPLETE_EMAIL_REQUEST";
                 break;
             case "DeleteEmail":
-                requestMsg =  "delete_email_request";
+                requestMsg =  "DELETE_EMAIL_REQUEST";
                 break;
             case "LogOut":
-                requestMsg =  "logout_request";
+                requestMsg =  "LOGOUT_REQUEST";
                 break;
         }
 
@@ -68,7 +68,7 @@ public class MailClient {
         try {
             while (true) {
 
-                temp = in.readLine();
+                temp = in.readUTF();
                 System.out.println("temp: " + temp);
 
                 if (temp == null) {
@@ -91,127 +91,116 @@ public class MailClient {
 
     private void run() {
 
-        String recvMsg = "no_msg";
-        String reqMsg = "no_request";
-        //String serverResponse = "no_response";
+//        String recvMsg = "no_msg";
+//        String reqMsg = "no_request";
+//        String serverResponse = "no_response";
         Scanner input = new Scanner(System.in);
         String userChoice;
 
-        recvMsg = receiveCompleteMsg();
+//        recvMsg = receiveCompleteMsg();
 
-        if (recvMsg.equals("connection_successful")) {
-            System.out.println("> Connected to MailServer!");
+        String receivedMsg = "NO_MESSAGE";
+
+//        // get connection status response from server
+//        try {
+//            receivedMsg = in.readUTF();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        if (receivedMsg.equals("CONNECTION_SUCCESSFUL")) {
+//            System.out.println("> Connected to MailServer!");
+//            try {
+//                out.writeUTF("GET_MENU_REQUEST");
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+
+        try {
+
+            while (!stopListening) {
+                System.out.println("Client point 1");
+                // the first readUTF() gets the CONTEXT of the request
+                // example: LOGIN_AUTH
+                // Based on the context of the request, there are
+                // follow up readUTF() commands that get the CONTENT of
+                // the request.
+                receivedMsg = in.readUTF();
+                System.out.println("Client point 2");
+                System.out.println("DIAG: receivedMsg: " + receivedMsg);
+//                // test DELETE *****
+//                receivedMsg = in.readUTF();
+//                System.out.println("DIAG: receivedMsg: " + receivedMsg);
+//                // test DELETE *****
+
+                if (receivedMsg.equals("END_OF_REQUEST_HANDLING") || receivedMsg.equals("CONNECTION_SUCCESSFUL")) {
+                    out.writeUTF("GET_MENU_REQUEST");
+
+                    // print the menu the server just sent
+                    System.out.print(in.readUTF());
+
+                    // read the user's menu choice
+                    userChoice = input.next();
+
+                    // send the appropriate request according to the user's menu choice
+                    out.writeUTF(createRequestMessage(userChoice));
+
+                } else if (receivedMsg.equals("LOGIN_AUTH")) {
+                    receivedMsg = in.readUTF();
+                    System.out.println(receivedMsg);
+                    if (receivedMsg.equals("Type your username:")) {
+//                    out.writeUTF("fantom");
+                        out.writeUTF(input.next());
+                        out.flush();
+                    } else if (receivedMsg.equals("Type your password:")) {
+//                    out.writeUTF("mypass");
+                        out.writeUTF(input.next());
+                        out.flush();
+                    }
+                }
+
+
+
+
+//                // print the menu the server just sent
+//                System.out.print(in.readUTF());
+
+//                // read the user's menu choice
+//                userChoice = input.next();
+
+//                // send the appropriate request according to the user's menu choice
+//                out.writeUTF(createRequestMessage(userChoice));
+
+
+
+
+
+
+
+
+
+
+//                if (receivedMsg.equals("CONNECTION_SUCCESSFUL")) {
+//                    System.out.println("> Connected to MailServer!");
+//                    out.writeUTF("GET_MENU_REQUEST");
+//                    out.flush();
+//                    System.out.println("Client point 3");
+//                    System.out.print(in.readUTF());
+//                    userChoice = input.next();
+//                    out.writeUTF(createRequestMessage(userChoice));
+//                    out.flush();
+//                }
+
+
+
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        while (!stopListening) {
-
-            // get the appropriate menu from the server
-            try {
-                recvMsg = in.readLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            // print the menu that was sent by the server
-            // to the user
-            System.out.println(recvMsg);
-
-            // read the user's input choice
-            userChoice = input.next();
-
-            // prepare the correct outbound message to the server,
-            // according to the user's choice
-            reqMsg = createRequestMessage(userChoice);
-
-            // send the formed request message to the server
-            try {
-                out.println(reqMsg);
-                recvMsg = in.readLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            // print the message the server sent back
-            // as a response
-            System.out.println(recvMsg);
-
-            // depending on the user's type of chosen function,
-            // print the appropriate received messages,
-            // send the appropriate follow up requests and receive
-            // the needed responses
-            switch (userChoice) {
-
-                case "LogIn":
-                case "SignUp":
-
-                    try {
-                        // give username
-                        System.out.println(in.readLine());
-                        out.println(input.next());
-                        // give password
-                        System.out.println(in.readLine());
-                        out.println(input.next());
-                        // get and print result from server
-                        System.out.println(in.readLine());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    break;
-                case "NewEmail":
-
-                    try {
-                        // print "Receiver: "
-                        System.out.println(in.readLine());
-                        // give receiver
-                        out.println(input.next());
-                        // print "Subject: "
-                        System.out.println(in.readLine());
-                        // give subject
-                        out.println(input.next());
-                        // print "Main body: "
-                        System.out.println(in.readLine());
-                        // give main body
-                        out.println(input.next());
-                        // get and print result from server
-                        System.out.println(in.readLine());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    break;
-                case "ShowEmails":
-
-                    try {
-                        // get and print result from server
-                        System.out.println(in.readLine());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    break;
-                case "ReadEmail":
-                case "DeleteEmail":
-
-                    try {
-                        // print "Enter the email's ID: "
-                        System.out.println(in.readLine());
-                        // give the id
-                        out.println(input.next());
-                        // get and print result from server
-                        System.out.println(in.readLine());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    break;
-            }
-
-            if (userChoice.equals("Exit")) {
-                stopListening = true;
-            }
-
-        }
 
     }
 

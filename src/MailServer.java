@@ -50,8 +50,8 @@ public class MailServer {
     private class RequestServiceThread implements Runnable {
 
         private Socket reqSocket;
-        private BufferedReader in;
-        private PrintWriter out;
+        private DataInputStream in;
+        private DataOutputStream out;
         private Account loggedInUser;
         boolean stopListening;
 
@@ -61,8 +61,8 @@ public class MailServer {
             loggedInUser = null;
 
             try {
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                out = new PrintWriter(socket.getOutputStream(), true);
+                in = new DataInputStream(socket.getInputStream());
+                out = new DataOutputStream(socket.getOutputStream());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -79,177 +79,199 @@ public class MailServer {
             // connection request
             // was accepted successfully
 
-            out.println("connection_successful");
+            try {
+                out.writeUTF("CONNECTION_SUCCESSFUL");
 
-            String receivedMsg = "no_msg";
+//                // TEST delete ****
+//                out.writeUTF("SOMETHING_ELSE");
+//                // TEST delete ****
 
-            while (!stopListening) {
+                String receivedMsg = "NO_MESSAGE";
 
-                // send the appropriate menu to the client
-                String menuOptions;
-                // send the menu options to the client after completing his request
-                if (loggedInUser != null) {
-                    // the thread handles requests from a logged in user
-                    menuOptions = "===============\n> NewEmail\n> ShowEmails\n> ReadEmail\n> DeleteEmail\n> LogOut\n> Exit\n===============";
-                } else {
-                    // the thread handles requests from a guest user
-                    menuOptions = "==========\n> LogIn\n> Register\n> Exit";
-                }
+                while (!stopListening) {
 
-                out.println(menuOptions);
+                    // Receive message from client
+                    try {
+                        System.out.println("point 1");
+                        receivedMsg = in.readUTF();
+                        System.out.println("point 2");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
-                try {
-                    receivedMsg = in.readLine();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                    switch (receivedMsg) {
 
-                switch (receivedMsg) {
+                        case "GET_MENU_REQUEST":
+                            // send the appropriate menu to the client
+                            String menuOptions;
+                            // send the menu options to the client after completing his request
+                            if (loggedInUser != null) {
+                                // the thread handles requests from a logged in user
+                                out.writeUTF("===============\n> NewEmail\n> ShowEmails\n> ReadEmail\n> DeleteEmail\n> LogOut\n> Exit\n===============");
+                            } else {
+                                // the thread handles requests from a guest user
+                                out.writeUTF("==========\n> LogIn\n> Register\n> Exit\n==========");
+                            }
+                            break;
+                        case "LOGIN_REQUEST":
+                            try {
+                                System.out.println("DIAG: eftasa1");
+                                out.writeUTF("LOGIN_AUTH");
+//                                out.flush();
+                                out.writeUTF("Type your username:");
+//                                out.flush();
+                                String recvUsername = in.readUTF();
+                                System.out.println("DIAG: eftasa2");
+                                out.writeUTF("LOGIN_AUTH");
+//                                out.flush();
+                                out.writeUTF("Type your password:");
+//                                out.flush();
+                                System.out.println("DIAG: eftasa3");
+                                String recvPassword = in.readUTF();
 
-                    case "login_request":
-                        try {
-                            out.println("Type your username: ");
-                            String recvUsername = in.readLine();
-                            System.out.println("DIAG: eftasa1");
-                            out.println("Type your password: ");
-                            System.out.println("DIAG: eftasa2");
-                            String recvPassword = in.readLine();
+                                String result = login(recvUsername, recvPassword);
+                                System.out.println("DIAG: username: " + recvUsername + " password: " + recvPassword);
+                                System.out.println("DIAG: result: " + result);
 
-                            String result = login(recvUsername, recvPassword);
+                                switch (result) {
+                                    case "VERIFICATION_SUCCESS":
+                                        loggedInUser = getUserAccount(recvUsername);
+                                        out.writeUTF("Welcome back " + recvUsername + "!");
+                                        break;
+                                    case "USERNAME_NOT_FOUND":
+                                        out.writeUTF("Error: Username does not exist!");
+                                        break;
+                                    case "INVALID_PASSWORD":
+                                        out.writeUTF("Error: Wrong password!");
+                                        break;
+                                }
 
-                            switch (result) {
-                                case "verification_success":
-                                    loggedInUser = getUserAccount(recvUsername);
-                                    out.println("Welcome back " + recvUsername + "!");
-                                    break;
-                                case "username_not_found":
-                                    out.println("Error: Username does not exist!");
-                                    break;
-                                case "invalid_password":
-                                    out.println("Error: Wrong password!");
-                                    break;
+                                // the server notifies the client that it has finished handling
+                                // the current client's request.
+                                out.writeUTF("END_OF_REQUEST_HANDLING");
+
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
 
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        case "REGISTER_REQUEST":
+                            String username = "NO_USERNAME";
+                            String password = "NO_PASSWORD";
 
-                    case "register_request":
-                        String username = "no_username";
-                        String password = "no_password";
+                            try {
+                                out.writeUTF("Enter a username: ");
+                                username = in.readUTF();
+                                out.writeUTF("Enter a password: ");
+                                password = in.readUTF();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
 
-                        try {
-                            out.println("Enter a username: ");
-                            username = in.readLine();
-                            out.println("Enter a password: ");
-                            password = in.readLine();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
-                        if (register(username, password).equals("account_created_successfully")) {
-                            out.println("Account created successfully!");
-                        } else if (register(username, password).equals("error_username_already_exists")) {
-                            out.println("Error! Username already exists!");
-                        }
+                            if (register(username, password).equals("ACCOUNT_CREATION_SUCCESS")) {
+                                out.writeUTF("Account created successfully!");
+                            } else if (register(username, password).equals("ERROR_USERNAME_ALREADY_EXISTS")) {
+                                out.writeUTF("Error! Username already exists!");
+                            }
 
 
-                        break;
+                            break;
 
-                    case "new_email_creation_request":
+                        case "NEW_EMAIL_CREATION_REQUEST":
 
-                        String receiver = "no_user";
-                        String subject = "no_subject";
-                        String mainBody = "no_main_body";
+                            String receiver = "NO_USER";
+                            String subject = "NO_SUBJECT";
+                            String mainBody = "NO_MAIN_BODY";
 
-                        try {
-                            out.println("Receiver: ");
-                            receiver = in.readLine();
-                            out.println("Subject: ");
-                            subject = in.readLine();
-                            out.println("Main body: ");
-                            mainBody = in.readLine();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        String result = newEmail(loggedInUser.getUsername(), receiver, subject, mainBody);
+                            try {
+                                out.writeUTF("Receiver: ");
+                                receiver = in.readUTF();
+                                out.writeUTF("Subject: ");
+                                subject = in.readUTF();
+                                out.writeUTF("Main body: ");
+                                mainBody = in.readUTF();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            String result = newEmail(loggedInUser.getUsername(), receiver, subject, mainBody);
 
-                        if (result.equals("email_sent_successfully")) {
-                            out.println("Mail sent successfully!");
-                        } else if (result.equals("error_receiver_not_valid")) {
-                            out.println("Error! Invalid receiver!");
-                        }
+                            if (result.equals("EMAIL_SEND_SUCCESS")) {
+                                out.writeUTF("Mail sent successfully!");
+                            } else if (result.equals("ERROR_INVALID_RECEIVER")) {
+                                out.writeUTF("Error! Invalid receiver!");
+                            }
 
-                        break;
+                            break;
 
-                    case "get_emails_preview_request":
-                        ArrayList<String> previewEntries = getEmailsPreview(loggedInUser);
-                        StringBuilder sb = new StringBuilder();
+                        case "GET_EMAILS_PREVIEW_REQUEST":
+                            ArrayList<String> previewEntries = getEmailsPreview(loggedInUser);
+                            StringBuilder sb = new StringBuilder();
 
-                        // convert the ArrayList<String> to a String containing
-                        // the preview's entries
-                        for (String entry : previewEntries) {
-                            sb.append(entry);
-                            sb.append("\n");
-                        }
+                            // convert the ArrayList<String> to a String containing
+                            // the preview's entries
+                            for (String entry : previewEntries) {
+                                sb.append(entry);
+                                sb.append("\n");
+                            }
 
-                        out.println(sb.toString());
+                            out.writeUTF(sb.toString());
 
-                        break;
+                            break;
 
-                    case "get_complete_email_request":
+                        case "GET_COMPLETE_EMAIL_REQUEST":
 
-                        String emailId = "no_id";
+                            String emailId = "NO_ID";
 
-                        try {
-                            out.println("Enter the email's ID: ");
-                            emailId = in.readLine();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        String emailResult = getEmail(emailId, loggedInUser);
+                            try {
+                                out.writeUTF("Enter the email's ID: ");
+                                emailId = in.readUTF();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            String emailResult = getEmail(emailId, loggedInUser);
 
-                        if (emailResult.equals("error_invalid_emailId")) {
-                            out.println("Error! Email ID not found!");
-                        } else {
-                            out.println(emailResult);
-                        }
+                            if (emailResult.equals("ERROR_INVALID_EMAIL_ID")) {
+                                out.writeUTF("Error! Email ID not found!");
+                            } else {
+                                out.writeUTF(emailResult);
+                            }
 
-                        break;
+                            break;
 
-                    case "delete_email_request":
+                        case "DELETE_EMAIL_REQUEST":
 
-                        String deleteId = "-1";
+                            String deleteId = "-1";
 
-                        try {
-                            out.println("Enter the email's ID: ");
-                            deleteId = in.readLine();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                            try {
+                                out.writeUTF("Enter the email's ID: ");
+                                deleteId = in.readUTF();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
 
-                        String deleteResult = deleteEmail(deleteId, loggedInUser);
+                            String deleteResult = deleteEmail(deleteId, loggedInUser);
 
-                        if (deleteResult.equals("error_invalid_emailId")) {
-                            out.println("Email deleted successfully!");
-                        } else if (deleteResult.equals("success_valid_emailId")) {
-                            out.println("Error! Invalid email id!");
-                        }
+                            if (deleteResult.equals("EMAIL_DELETION_SUCCESS")) {
+                                out.writeUTF("Email deleted successfully!");
+                            } else if (deleteResult.equals("ERROR_INVALID_EMAIL_ID")) {
+                                out.writeUTF("Error! Invalid email id!");
+                            }
 
-                    case "logout_request":
-                        logOut();
+                        case "LOGOUT_REQUEST":
+                            logOut();
 
-                        break;
+                            break;
 
-                    case "exit_request":
-                        exit();
+                        case "EXIT_REQUEST":
+                            exit();
 
-                        break;
+                            break;
+
+                    }
 
                 }
-
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
         }
 
         private Account getUserAccount(String username) {
@@ -271,7 +293,7 @@ public class MailServer {
             for (Account account : accountList) {
                 if (account.getUsername().equals(username)) {
                     // The given username is already taken (already exists)
-                    return "error_username_already_exists";
+                    return "ERROR_USERNAME_ALREADY_EXISTS";
                 }
             }
 
@@ -280,7 +302,7 @@ public class MailServer {
             // The new account object is then added to the accountList array list.
             accountList.add(new Account(username, password));
 
-            return "account_created_successfully";
+            return "ACCOUNT_CREATION_SUCCESS";
         }
 
         private String login(String givenUsername, String givenPassword) {
@@ -304,14 +326,14 @@ public class MailServer {
                 if (validPassword) {
                     // The given password is valid
                     loggedInUser = matchingAccount;
-                    return "verification_success";
+                    return "VERIFICATION_SUCCESS";
                 } else {
                     // The given password is invalid
-                    return "invalid_password";
+                    return "INVALID_PASSWORD";
                 }
             } else {
                 // matchingAccount is null, meaning no account exists with the given username
-                return "username_not_found";
+                return "USERNAME_NOT_FOUND";
             }
 
         }
@@ -331,10 +353,10 @@ public class MailServer {
             if (target != null) {
                 // receiver is valid (username exists)
                 target.addNewEmail(new Email(senderUsername, receiverUsername, subject, mainBody));
-                return "email_sent_successfully";
+                return "EMAIL_SEND_SUCCESS";
             } else {
                 // receiver is not valid (a user with the given username does not exist)
-                return "error_receiver_not_valid";
+                return "ERROR_INVALID_RECEIVER";
             }
 
         }
@@ -375,7 +397,7 @@ public class MailServer {
 
             if (targetId < 1 || targetId > user.getMailbox().size()) {
                 // invalid emailId given
-                return "error_invalid_emailId";
+                return "ERROR_INVALID_EMAIL_ID";
             } else {
                 // the given emailId id valid
                 Email targetEmail = user.getMailbox().get(Integer.parseInt(emailId) - 1);

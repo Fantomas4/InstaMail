@@ -36,12 +36,11 @@ public class Account {
 
         if (targetId < 1 || targetId > mailbox.size()) {
             // invalid emailId given
-            return "error_invalid_emailId";
+            return "ERROR_INVALID_EMAIL_ID";
         } else {
             // the emailId given is valid
             mailbox.remove(Integer.parseInt(emailId) - 1);
-
-            return "success_valid_emailId";
+            return "EMAIL_DELETION_SUCCESS";
         }
     }
 }
