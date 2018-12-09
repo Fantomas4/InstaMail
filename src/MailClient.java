@@ -125,6 +125,23 @@ public class MailClient {
                     // send the appropriate request according to the user's menu choice
                     out.writeUTF(createRequestMessage(userChoice));
 
+                } else if (receivedMsg.equals("REGISTER_INFO")) {
+                    receivedMsg = in.readUTF();
+                    if (receivedMsg.equals("Enter a username:")) {
+//                    out.writeUTF("fantom");
+                        System.out.println(receivedMsg);
+                        out.writeUTF(input.next());
+                        out.flush();
+                    } else if (receivedMsg.equals("Enter a password:")) {
+//                    out.writeUTF("mypass");
+                        System.out.println(receivedMsg);
+                        out.writeUTF(input.next());
+                        out.flush();
+                    } else {
+                        // the receivedMsg contains the authentication result report
+                        System.out.println(receivedMsg);
+                    }
+
                 } else if (receivedMsg.equals("LOGIN_AUTH")) {
                     receivedMsg = in.readUTF();
                     if (receivedMsg.equals("Type your username:")) {

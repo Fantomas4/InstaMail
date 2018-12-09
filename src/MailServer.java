@@ -110,7 +110,7 @@ public class MailServer {
                                 out.writeUTF("===============\n> NewEmail\n> ShowEmails\n> ReadEmail\n> DeleteEmail\n> LogOut\n> Exit\n===============");
                             } else {
                                 // the thread handles requests from a guest user
-                                out.writeUTF("==========\n> LogIn\n> Register\n> Exit\n==========");
+                                out.writeUTF("==========\n> LogIn\n> SignUp\n> Exit\n==========");
                             }
                             break;
                         case "LOGIN_REQUEST":
@@ -160,20 +160,26 @@ public class MailServer {
                             String password = "NO_PASSWORD";
 
                             try {
-                                out.writeUTF("Enter a username: ");
+                                out.writeUTF("REGISTER_INFO");
+                                out.writeUTF("Enter a username:");
                                 username = in.readUTF();
-                                out.writeUTF("Enter a password: ");
+                                out.writeUTF("REGISTER_INFO");
+                                out.writeUTF("Enter a password:");
                                 password = in.readUTF();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
 
+                            out.writeUTF("REGISTER_INFO");
                             if (register(username, password).equals("ACCOUNT_CREATION_SUCCESS")) {
                                 out.writeUTF("Account created successfully!");
                             } else if (register(username, password).equals("ERROR_USERNAME_ALREADY_EXISTS")) {
                                 out.writeUTF("Error! Username already exists!");
                             }
 
+                            // the server notifies the client that it has finished handling
+                            // the current client's request.
+                            out.writeUTF("END_OF_REQUEST_HANDLING");
 
                             break;
 
