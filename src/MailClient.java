@@ -41,7 +41,7 @@ public class MailClient {
                 requestMsg =  "EXIT_REQUEST";
                 break;
             case "NewEmail":
-                requestMsg =  "NEW_EMAIL_CREATION_REQUEST";
+                requestMsg =  "COMPOSE_NEW_EMAIL_REQUEST";
                 break;
             case "ShowEmails":
                 requestMsg =  "GET_EMAILS_PREVIEW_REQUEST";
@@ -117,30 +117,13 @@ public class MailClient {
                     out.writeUTF("GET_MENU_REQUEST");
 
                     // print the menu the server just sent
-                    System.out.print(in.readUTF());
+                    System.out.print(in.readUTF() + "\n");
 
                     // read the user's menu choice
                     userChoice = input.next();
 
                     // send the appropriate request according to the user's menu choice
                     out.writeUTF(createRequestMessage(userChoice));
-
-                } else if (receivedMsg.equals("REGISTER_INFO")) {
-                    receivedMsg = in.readUTF();
-                    if (receivedMsg.equals("Enter a username:")) {
-//                    out.writeUTF("fantom");
-                        System.out.println(receivedMsg);
-                        out.writeUTF(input.next());
-                        out.flush();
-                    } else if (receivedMsg.equals("Enter a password:")) {
-//                    out.writeUTF("mypass");
-                        System.out.println(receivedMsg);
-                        out.writeUTF(input.next());
-                        out.flush();
-                    } else {
-                        // the receivedMsg contains the authentication result report
-                        System.out.println(receivedMsg);
-                    }
 
                 } else if (receivedMsg.equals("LOGIN_AUTH")) {
                     receivedMsg = in.readUTF();
@@ -158,42 +141,33 @@ public class MailClient {
                         // the receivedMsg contains the authentication result report
                         System.out.println(receivedMsg);
                     }
+                } else if (receivedMsg.equals("REGISTER_INFO")) {
+                    receivedMsg = in.readUTF();
+                    if (receivedMsg.equals("Enter a username:")) {
+                        System.out.println(receivedMsg);
+                        out.writeUTF(input.next());
+                        out.flush();
+                    } else if (receivedMsg.equals("Enter a password:")) {
+                        System.out.println(receivedMsg);
+                        out.writeUTF(input.next());
+                        out.flush();
+                    } else {
+                        // the receivedMsg contains the authentication result report
+                        System.out.println(receivedMsg);
+                    }
+
+                } else if (receivedMsg.equals("EMAIL_COMPOSITION")) {
+                    receivedMsg = in.readUTF();
+                    if (receivedMsg.equals("Receiver:") || receivedMsg.equals("Subject:") || receivedMsg.equals("Main body:")) {
+                        System.out.println(receivedMsg);
+                        out.writeUTF(input.next());
+                        out.flush();
+                    } else {
+                        // the receivedMsg contains the email composition result report
+                        System.out.println(receivedMsg);
+                    }
+
                 }
-
-
-
-
-//                // print the menu the server just sent
-//                System.out.print(in.readUTF());
-
-//                // read the user's menu choice
-//                userChoice = input.next();
-
-//                // send the appropriate request according to the user's menu choice
-//                out.writeUTF(createRequestMessage(userChoice));
-
-
-
-
-
-
-
-
-
-
-//                if (receivedMsg.equals("CONNECTION_SUCCESSFUL")) {
-//                    System.out.println("> Connected to MailServer!");
-//                    out.writeUTF("GET_MENU_REQUEST");
-//                    out.flush();
-//                    System.out.println("Client point 3");
-//                    System.out.print(in.readUTF());
-//                    userChoice = input.next();
-//                    out.writeUTF(createRequestMessage(userChoice));
-//                    out.flush();
-//                }
-
-
-
 
             }
 

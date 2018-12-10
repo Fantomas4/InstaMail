@@ -21,6 +21,12 @@ public class MailServer {
             e.printStackTrace();
         }
 
+        // *** FOR TESTING PURPOSES ONLY ***
+
+        accountList.add(new Account("fantom", "gr"));
+
+        // *** FOR TESTING PURPOSES ONLY ***
+
         handshakeListeningThread();
 
     }
@@ -92,9 +98,8 @@ public class MailServer {
 
                     // Receive message from client
                     try {
-                        System.out.println("point 1");
                         receivedMsg = in.readUTF();
-                        System.out.println("point 2");
+                        System.out.println("DIAG: Start of loop receivedMsg: " + receivedMsg);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -183,29 +188,35 @@ public class MailServer {
 
                             break;
 
-                        case "NEW_EMAIL_CREATION_REQUEST":
+                        case "COMPOSE_NEW_EMAIL_REQUEST":
 
                             String receiver = "NO_USER";
                             String subject = "NO_SUBJECT";
                             String mainBody = "NO_MAIN_BODY";
 
                             try {
-                                out.writeUTF("Receiver: ");
+                                out.writeUTF("EMAIL_COMPOSITION");
+                                out.writeUTF("Receiver:");
                                 receiver = in.readUTF();
-                                out.writeUTF("Subject: ");
+                                out.writeUTF("EMAIL_COMPOSITION");
+                                out.writeUTF("Subject:");
                                 subject = in.readUTF();
-                                out.writeUTF("Main body: ");
+                                out.writeUTF("EMAIL_COMPOSITION");
+                                out.writeUTF("Main body:");
                                 mainBody = in.readUTF();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
                             String result = newEmail(loggedInUser.getUsername(), receiver, subject, mainBody);
 
+                            out.writeUTF("EMAIL_COMPOSITION");
                             if (result.equals("EMAIL_SEND_SUCCESS")) {
                                 out.writeUTF("Mail sent successfully!");
                             } else if (result.equals("ERROR_INVALID_RECEIVER")) {
                                 out.writeUTF("Error! Invalid receiver!");
                             }
+
+                            out.writeUTF("END_OF_REQUEST_HANDLING");
 
                             break;
 
