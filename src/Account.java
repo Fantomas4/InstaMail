@@ -11,6 +11,10 @@ public class Account {
         this.username = username;
         this.password = password;
         mailbox = new ArrayList<>();
+
+        // *** FOR TESTING PURPOSES ONLY
+        mailbox.add(new Email("fantom", "fantom", "test", "test finish."));
+        // *** FOR TESTING PURPOSES ONLY
     }
 
     public String getUsername() {

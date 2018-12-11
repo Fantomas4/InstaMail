@@ -231,7 +231,13 @@ public class MailServer {
                                 sb.append("\n");
                             }
 
+//                            System.out.println("&&&&&&&&&&&&");
+//                            String temp = sb.toString();
+//                            System.out.print(temp);
+                            out.writeUTF("EMAILS_PREVIEW");
+//                            out.writeUTF(temp);
                             out.writeUTF(sb.toString());
+                            out.writeUTF("END_OF_REQUEST_HANDLING");
 
                             break;
 
@@ -240,18 +246,22 @@ public class MailServer {
                             String emailId = "NO_ID";
 
                             try {
-                                out.writeUTF("Enter the email's ID: ");
+                                out.writeUTF("COMPLETE_EMAIL_CONTENT");
+                                out.writeUTF("Enter the email's ID:");
                                 emailId = in.readUTF();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
                             String emailResult = getEmail(emailId, loggedInUser);
 
+                            out.writeUTF("COMPLETE_EMAIL_CONTENT");
                             if (emailResult.equals("ERROR_INVALID_EMAIL_ID")) {
                                 out.writeUTF("Error! Email ID not found!");
                             } else {
                                 out.writeUTF(emailResult);
                             }
+
+                            out.writeUTF("END_OF_REQUEST_HANDLING");
 
                             break;
 
@@ -260,7 +270,8 @@ public class MailServer {
                             String deleteId = "-1";
 
                             try {
-                                out.writeUTF("Enter the email's ID: ");
+                                out.writeUTF("EMAIL_DELETION");
+                                out.writeUTF("Enter the email's ID:");
                                 deleteId = in.readUTF();
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -268,11 +279,14 @@ public class MailServer {
 
                             String deleteResult = deleteEmail(deleteId, loggedInUser);
 
+                            out.writeUTF("EMAIL_DELETION");
                             if (deleteResult.equals("EMAIL_DELETION_SUCCESS")) {
                                 out.writeUTF("Email deleted successfully!");
                             } else if (deleteResult.equals("ERROR_INVALID_EMAIL_ID")) {
                                 out.writeUTF("Error! Invalid email id!");
                             }
+
+                            out.writeUTF("END_OF_REQUEST_HANDLING");
 
                             break;
 

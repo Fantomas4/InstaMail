@@ -167,6 +167,20 @@ public class MailClient {
                         System.out.println(receivedMsg);
                     }
 
+                } else if (receivedMsg.equals("EMAILS_PREVIEW")) {
+                    System.out.print(in.readUTF() + "\n");
+
+                } else if (receivedMsg.equals("COMPLETE_EMAIL_CONTENT") || receivedMsg.equals("EMAIL_DELETION")) {
+                    receivedMsg = in.readUTF();
+                    if (receivedMsg.equals("Enter the email's ID:")) {
+                        System.out.println(receivedMsg);
+                        out.writeUTF(input.next());
+                        out.flush();
+                    } else {
+                        // the receivedMsg contains the complete email content
+                        // or the delete message action's result status
+                        System.out.println(receivedMsg);
+                    }
                 }
 
             }
