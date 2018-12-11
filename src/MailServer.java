@@ -8,7 +8,7 @@ public class MailServer {
 
     private int handshakePort;
     private ArrayList<Account> accountList;
-    private ServerSocket serverSocket;
+    private ServerSocket serverSocket = null;
     private ArrayList<Thread> requestServiceThreads;
 
     public MailServer(int port) {
@@ -17,17 +17,34 @@ public class MailServer {
         accountList = new ArrayList<>();
         try {
             serverSocket = new ServerSocket(handshakePort);
+
+            // *** FOR TESTING PURPOSES ONLY ***
+
+            accountList.add(new Account("fantom", "gr"));
+
+            // *** FOR TESTING PURPOSES ONLY ***
+
+            handshakeListeningThread();
+
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            // release the system's resources and clean up
+            // before exiting the Server
+            try {
+
+                System.out.println("Server cleaning up...");
+
+                if (serverSocket != null) {
+                    serverSocket.close();
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
-        // *** FOR TESTING PURPOSES ONLY ***
 
-        accountList.add(new Account("fantom", "gr"));
-
-        // *** FOR TESTING PURPOSES ONLY ***
-
-        handshakeListeningThread();
 
     }
 
@@ -55,9 +72,9 @@ public class MailServer {
 
     private class RequestServiceThread implements Runnable {
 
-        private Socket reqSocket;
-        private DataInputStream in;
-        private DataOutputStream out;
+        private Socket reqSocket = null;
+        private DataInputStream in = null;
+        private DataOutputStream out = null;
         private Account loggedInUser;
         boolean stopListening;
 
@@ -67,8 +84,8 @@ public class MailServer {
             loggedInUser = null;
 
             try {
-                in = new DataInputStream(socket.getInputStream());
-                out = new DataOutputStream(socket.getOutputStream());
+                in = new DataInputStream(reqSocket.getInputStream());
+                out = new DataOutputStream(reqSocket.getOutputStream());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -88,21 +105,13 @@ public class MailServer {
             try {
                 out.writeUTF("CONNECTION_SUCCESSFUL");
 
-//                // TEST delete ****
-//                out.writeUTF("SOMETHING_ELSE");
-//                // TEST delete ****
-
                 String receivedMsg = "NO_MESSAGE";
 
                 while (!stopListening) {
 
                     // Receive message from client
-                    try {
-                        receivedMsg = in.readUTF();
-                        System.out.println("DIAG: Start of loop receivedMsg: " + receivedMsg);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    receivedMsg = in.readUTF();
+                    System.out.println("DIAG: Start of loop receivedMsg: " + receivedMsg);
 
                     switch (receivedMsg) {
 
@@ -119,61 +128,54 @@ public class MailServer {
                             }
                             break;
                         case "LOGIN_REQUEST":
-                            try {
-                                System.out.println("DIAG: eftasa1");
-                                out.writeUTF("LOGIN_AUTH");
-//                                out.flush();
-                                out.writeUTF("Type your username:");
-//                                out.flush();
-                                String recvUsername = in.readUTF();
-                                System.out.println("DIAG: eftasa2");
-                                out.writeUTF("LOGIN_AUTH");
-//                                out.flush();
-                                out.writeUTF("Type your password:");
-//                                out.flush();
-                                System.out.println("DIAG: eftasa3");
-                                String recvPassword = in.readUTF();
 
-                                String result = login(recvUsername, recvPassword);
-                                System.out.println("DIAG: username: " + recvUsername + " password: " + recvPassword);
-                                System.out.println("DIAG: result: " + result);
+                            System.out.println("DIAG: eftasa1");
+                            out.writeUTF("LOGIN_AUTH");
+//                                out.flush();
+                            out.writeUTF("Type your username:");
+//                                out.flush();
+                            String recvUsername = in.readUTF();
+                            System.out.println("DIAG: eftasa2");
+                            out.writeUTF("LOGIN_AUTH");
+//                                out.flush();
+                            out.writeUTF("Type your password:");
+//                                out.flush();
+                            System.out.println("DIAG: eftasa3");
+                            String recvPassword = in.readUTF();
 
-                                out.writeUTF("LOGIN_AUTH");
-                                switch (result) {
-                                    case "VERIFICATION_SUCCESS":
-                                        loggedInUser = getUserAccount(recvUsername);
-                                        out.writeUTF("Welcome back " + recvUsername + "!");
-                                        break;
-                                    case "USERNAME_NOT_FOUND":
-                                        out.writeUTF("Error: Username does not exist!");
-                                        break;
-                                    case "INVALID_PASSWORD":
-                                        out.writeUTF("Error: Wrong password!");
-                                        break;
-                                }
+                            String result = login(recvUsername, recvPassword);
+                            System.out.println("DIAG: username: " + recvUsername + " password: " + recvPassword);
+                            System.out.println("DIAG: result: " + result);
 
-                                // the server notifies the client that it has finished handling
-                                // the current client's request.
-                                out.writeUTF("END_OF_REQUEST_HANDLING");
-
-                            } catch (IOException e) {
-                                e.printStackTrace();
+                            out.writeUTF("LOGIN_AUTH");
+                            switch (result) {
+                                case "VERIFICATION_SUCCESS":
+                                    loggedInUser = getUserAccount(recvUsername);
+                                    out.writeUTF("Welcome back " + recvUsername + "!");
+                                    break;
+                                case "USERNAME_NOT_FOUND":
+                                    out.writeUTF("Error: Username does not exist!");
+                                    break;
+                                case "INVALID_PASSWORD":
+                                    out.writeUTF("Error: Wrong password!");
+                                    break;
                             }
+
+                            // the server notifies the client that it has finished handling
+                            // the current client's request.
+                            out.writeUTF("END_OF_REQUEST_HANDLING");
+
                             break;
                         case "REGISTER_REQUEST":
                             String username = "NO_USERNAME";
                             String password = "NO_PASSWORD";
 
-                            try {
-                                out.writeUTF("REGISTER_INFO");
-                                out.writeUTF("Enter a username:");
-                                username = in.readUTF();
-                                out.writeUTF("REGISTER_INFO");
-                                out.writeUTF("Enter a password:");
-                                password = in.readUTF();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            out.writeUTF("REGISTER_INFO");
+                            out.writeUTF("Enter a username:");
+                            username = in.readUTF();
+                            out.writeUTF("REGISTER_INFO");
+                            out.writeUTF("Enter a password:");
+                            password = in.readUTF();
 
                             out.writeUTF("REGISTER_INFO");
                             if (register(username, password).equals("ACCOUNT_CREATION_SUCCESS")) {
@@ -194,25 +196,22 @@ public class MailServer {
                             String subject = "NO_SUBJECT";
                             String mainBody = "NO_MAIN_BODY";
 
-                            try {
-                                out.writeUTF("EMAIL_COMPOSITION");
-                                out.writeUTF("Receiver:");
-                                receiver = in.readUTF();
-                                out.writeUTF("EMAIL_COMPOSITION");
-                                out.writeUTF("Subject:");
-                                subject = in.readUTF();
-                                out.writeUTF("EMAIL_COMPOSITION");
-                                out.writeUTF("Main body:");
-                                mainBody = in.readUTF();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            String result = newEmail(loggedInUser.getUsername(), receiver, subject, mainBody);
+                            out.writeUTF("EMAIL_COMPOSITION");
+                            out.writeUTF("Receiver:");
+                            receiver = in.readUTF();
+                            out.writeUTF("EMAIL_COMPOSITION");
+                            out.writeUTF("Subject:");
+                            subject = in.readUTF();
+                            out.writeUTF("EMAIL_COMPOSITION");
+                            out.writeUTF("Main body:");
+                            mainBody = in.readUTF();
+
+                            String creationResult = newEmail(loggedInUser.getUsername(), receiver, subject, mainBody);
 
                             out.writeUTF("EMAIL_COMPOSITION");
-                            if (result.equals("EMAIL_SEND_SUCCESS")) {
+                            if (creationResult.equals("EMAIL_SEND_SUCCESS")) {
                                 out.writeUTF("Mail sent successfully!");
-                            } else if (result.equals("ERROR_INVALID_RECEIVER")) {
+                            } else if (creationResult.equals("ERROR_INVALID_RECEIVER")) {
                                 out.writeUTF("Error! Invalid receiver!");
                             }
 
@@ -245,13 +244,10 @@ public class MailServer {
 
                             String emailId = "NO_ID";
 
-                            try {
-                                out.writeUTF("COMPLETE_EMAIL_CONTENT");
-                                out.writeUTF("Enter the email's ID:");
-                                emailId = in.readUTF();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            out.writeUTF("COMPLETE_EMAIL_CONTENT");
+                            out.writeUTF("Enter the email's ID:");
+                            emailId = in.readUTF();
+
                             String emailResult = getEmail(emailId, loggedInUser);
 
                             out.writeUTF("COMPLETE_EMAIL_CONTENT");
@@ -269,13 +265,9 @@ public class MailServer {
 
                             String deleteId = "-1";
 
-                            try {
-                                out.writeUTF("EMAIL_DELETION");
-                                out.writeUTF("Enter the email's ID:");
-                                deleteId = in.readUTF();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            out.writeUTF("EMAIL_DELETION");
+                            out.writeUTF("Enter the email's ID:");
+                            deleteId = in.readUTF();
 
                             String deleteResult = deleteEmail(deleteId, loggedInUser);
 
@@ -293,6 +285,8 @@ public class MailServer {
                         case "LOGOUT_REQUEST":
                             logOut();
 
+                            out.writeUTF("END_OF_REQUEST_HANDLING");
+
                             break;
 
                         case "EXIT_REQUEST":
@@ -305,6 +299,25 @@ public class MailServer {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                // release the system's resources and clean up
+                // before exiting the requestThread
+                try {
+
+                    System.out.println("RequestThread cleaning up...");
+                    if (out != null) {
+                        out.close();
+                    }
+                    if (in != null) {
+                        in.close();
+                    }
+                    if (reqSocket != null) {
+                        reqSocket.close();
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

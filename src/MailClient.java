@@ -4,9 +4,9 @@ import java.util.Scanner;
 
 public class MailClient {
 
-    private Socket socket;
-    private DataInputStream in;
-    private DataOutputStream out;
+    private Socket socket = null;
+    private DataInputStream in = null;
+    private DataOutputStream out = null;
     private boolean stopListening;
 
     public MailClient(String ipAddr, int port) {
@@ -58,35 +58,6 @@ public class MailClient {
         }
 
         return requestMsg;
-    }
-
-    public String receiveCompleteMsg() {
-
-        String temp;
-        String finalMsg = "";
-
-        try {
-            while (true) {
-
-                temp = in.readUTF();
-                System.out.println("temp: " + temp);
-
-                if (temp == null) {
-                    System.out.println("Mpika break!");
-                    break;
-                } else {
-                    finalMsg += temp;
-                }
-
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println(finalMsg);
-
-        return finalMsg;
-
     }
 
     private void run() {
@@ -187,6 +158,25 @@ public class MailClient {
 
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            // release the system's resources and clean up
+            // before exiting
+
+            try {
+                System.out.println("Client cleaning up...");
+                if (out != null) {
+                    out.close();
+                }
+                if (in != null) {
+                    in.close();
+                }
+                if (socket != null) {
+                    socket.close();
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
 
