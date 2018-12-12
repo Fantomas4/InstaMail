@@ -79,10 +79,6 @@ public class MailClient {
                 // the request.
                 receivedMsg = in.readUTF();
                 System.out.println("DIAG: receivedMsg: " + receivedMsg);
-//                // test DELETE *****
-//                receivedMsg = in.readUTF();
-//                System.out.println("DIAG: receivedMsg: " + receivedMsg);
-//                // test DELETE *****
 
                 if (receivedMsg.equals("END_OF_REQUEST_HANDLING") || receivedMsg.equals("CONNECTION_SUCCESSFUL")) {
                     out.writeUTF("GET_MENU_REQUEST");
@@ -152,6 +148,11 @@ public class MailClient {
                         // or the delete message action's result status
                         System.out.println(receivedMsg);
                     }
+                } else if (receivedMsg.equals("TERMINATE_CONNECTION")) {
+                    // the server acknowledges the client's exit request and
+                    // asks the client to gracefully terminate its connection,
+                    // while the server does the same.
+                    stopListening = true;
                 }
 
             }
@@ -164,11 +165,11 @@ public class MailClient {
 
             try {
                 System.out.println("Client cleaning up...");
-                if (out != null) {
-                    out.close();
-                }
                 if (in != null) {
                     in.close();
+                }
+                if (out != null) {
+                    out.close();
                 }
                 if (socket != null) {
                     socket.close();

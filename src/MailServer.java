@@ -50,22 +50,21 @@ public class MailServer {
 
     private void handshakeListeningThread() {
 
-        while (true) {
-            try {
+        try {
+            while (true) {
+                System.out.println("mpika handshakeListeningThread while loop");
                 // accept an incoming handshake from a new client,
                 // and create a new socket for this particular client
                 Socket serviceSocket = serverSocket.accept();
-
+                System.out.println("AFTER serverSocket.accept()");
                 // create a new RequestServiceThread object, pass it to a new serviceThread,
                 // start the serviceThread and then add
                 // it to the clientThreads list
-                Thread serviceThread = new Thread(new RequestServiceThread(serviceSocket));
-                serviceThread.start();
-                requestServiceThreads.add(serviceThread);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
+                new RequestServiceThread(serviceSocket);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }
@@ -97,18 +96,21 @@ public class MailServer {
 
         public void run() {
 
+
+            System.out.println("mpika run");
             // send a message to the client
             // in order to inform him that his
             // connection request
             // was accepted successfully
 
             try {
+                System.out.println("mpika try");
                 out.writeUTF("CONNECTION_SUCCESSFUL");
 
                 String receivedMsg = "NO_MESSAGE";
 
                 while (!stopListening) {
-
+                    System.out.println("mpika looooooop");
                     // Receive message from client
                     receivedMsg = in.readUTF();
                     System.out.println("DIAG: Start of loop receivedMsg: " + receivedMsg);
@@ -290,12 +292,11 @@ public class MailServer {
                             break;
 
                         case "EXIT_REQUEST":
+                            out.writeUTF("TERMINATE_CONNECTION");
                             exit();
 
                             break;
-
                     }
-
                 }
             } catch (IOException e) {
                 e.printStackTrace();
