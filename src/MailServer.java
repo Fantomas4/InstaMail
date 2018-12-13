@@ -123,10 +123,10 @@ public class MailServer {
                             // send the menu options to the client after completing his request
                             if (loggedInUser != null) {
                                 // the thread handles requests from a logged in user
-                                out.writeUTF("===============\n> NewEmail\n> ShowEmails\n> ReadEmail\n> DeleteEmail\n> LogOut\n> Exit\n===============");
+                                out.writeUTF("Welcome back " + loggedInUser.getUsername() + " !\n" + "===============\n> NewEmail\n> ShowEmails\n> ReadEmail\n> DeleteEmail\n> LogOut\n> Exit\n===============");
                             } else {
                                 // the thread handles requests from a guest user
-                                out.writeUTF("==========\n> LogIn\n> SignUp\n> Exit\n==========");
+                                out.writeUTF("Hello, you connected as a guest.\n" + "==========\n> LogIn\n> SignUp\n> Exit\n==========");
                             }
                             break;
                         case "LOGIN_REQUEST":
@@ -153,7 +153,7 @@ public class MailServer {
                             switch (result) {
                                 case "VERIFICATION_SUCCESS":
                                     loggedInUser = getUserAccount(recvUsername);
-                                    out.writeUTF("Welcome back " + recvUsername + "!");
+                                    out.writeUTF("Login success!");
                                     break;
                                 case "USERNAME_NOT_FOUND":
                                     out.writeUTF("Error: Username does not exist!");

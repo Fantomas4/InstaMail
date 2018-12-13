@@ -72,13 +72,16 @@ public class MailClient {
         try {
 
             while (!stopListening) {
+
+                System.out.print("-----------\nMailServer:\n-----------\n");
+
                 // the first readUTF() gets the CONTEXT of the request
                 // example: LOGIN_AUTH
                 // Based on the context of the request, there are
                 // follow up readUTF() commands that get the CONTENT of
                 // the request.
                 receivedMsg = in.readUTF();
-                System.out.println("DIAG: receivedMsg: " + receivedMsg);
+//                System.out.println("DIAG: receivedMsg: " + receivedMsg);
 
                 if (receivedMsg.equals("END_OF_REQUEST_HANDLING") || receivedMsg.equals("CONNECTION_SUCCESSFUL")) {
                     out.writeUTF("GET_MENU_REQUEST");
