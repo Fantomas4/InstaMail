@@ -56,12 +56,14 @@ public class MailServer {
                 // accept an incoming handshake from a new client,
                 // and create a new socket for this particular client
                 Socket serviceSocket = serverSocket.accept();
+                System.out.println("DIAG: ServiceSocket assigned to client is: " + serviceSocket.getPort());
                 System.out.println("AFTER serverSocket.accept()");
                 // create a new RequestServiceThread object, pass it to a new serviceThread,
                 // start the serviceThread and then add
                 // it to the clientThreads list
 
-                new RequestServiceThread(serviceSocket);
+                new Thread(new RequestServiceThread(serviceSocket)).start();
+                System.out.println("After thread creation in loop!");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -69,7 +71,7 @@ public class MailServer {
 
     }
 
-    private class RequestServiceThread implements Runnable {
+    private class RequestServiceThread implements Runnable{
 
         private Socket reqSocket = null;
         private DataInputStream in = null;
@@ -77,7 +79,7 @@ public class MailServer {
         private Account loggedInUser;
         boolean stopListening;
 
-        private RequestServiceThread(Socket socket) {
+        public RequestServiceThread(Socket socket) {
 
             reqSocket = socket;
             loggedInUser = null;
@@ -91,7 +93,6 @@ public class MailServer {
 
             stopListening = false;
 
-            run();
         }
 
         public void run() {
