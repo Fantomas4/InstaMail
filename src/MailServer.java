@@ -52,12 +52,9 @@ public class MailServer {
 
         try {
             while (true) {
-                System.out.println("mpika handshakeListeningThread while loop");
                 // accept an incoming handshake from a new client,
                 // and create a new socket for this particular client
                 Socket serviceSocket = serverSocket.accept();
-                System.out.println("DIAG: ServiceSocket assigned to client is: " + serviceSocket.getPort());
-                System.out.println("AFTER serverSocket.accept()");
                 // create a new RequestServiceThread object, pass it to a new serviceThread,
                 // start the serviceThread and then add
                 // it to the clientThreads list
@@ -96,22 +93,17 @@ public class MailServer {
         }
 
         public void run() {
-
-
-            System.out.println("mpika run");
             // send a message to the client
             // in order to inform him that his
             // connection request
             // was accepted successfully
 
             try {
-                System.out.println("mpika try");
                 out.writeUTF("CONNECTION_SUCCESSFUL");
 
                 String receivedMsg = "NO_MESSAGE";
 
                 while (!stopListening) {
-                    System.out.println("mpika looooooop");
                     // Receive message from client
                     receivedMsg = in.readUTF();
                     System.out.println("DIAG: Start of loop receivedMsg: " + receivedMsg);
@@ -131,19 +123,15 @@ public class MailServer {
                             }
                             break;
                         case "LOGIN_REQUEST":
-
-                            System.out.println("DIAG: eftasa1");
                             out.writeUTF("LOGIN_AUTH");
 //                                out.flush();
                             out.writeUTF("Type your username:");
 //                                out.flush();
                             String recvUsername = in.readUTF();
-                            System.out.println("DIAG: eftasa2");
                             out.writeUTF("LOGIN_AUTH");
 //                                out.flush();
                             out.writeUTF("Type your password:");
 //                                out.flush();
-                            System.out.println("DIAG: eftasa3");
                             String recvPassword = in.readUTF();
 
                             String result = login(recvUsername, recvPassword);

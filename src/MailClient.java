@@ -65,8 +65,6 @@ public class MailClient {
         Scanner input = new Scanner(System.in);
         String userChoice;
 
-//        recvMsg = receiveCompleteMsg();
-
         String receivedMsg = "NO_MESSAGE";
 
         try {
@@ -98,12 +96,10 @@ public class MailClient {
                 } else if (receivedMsg.equals("LOGIN_AUTH")) {
                     receivedMsg = in.readUTF();
                     if (receivedMsg.equals("Type your username:")) {
-//                    out.writeUTF("fantom");
                         System.out.println(receivedMsg);
                         out.writeUTF(input.next());
                         out.flush();
                     } else if (receivedMsg.equals("Type your password:")) {
-//                    out.writeUTF("mypass");
                         System.out.println(receivedMsg);
                         out.writeUTF(input.next());
                         out.flush();
