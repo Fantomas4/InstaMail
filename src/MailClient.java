@@ -161,7 +161,12 @@ public class MailClient {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            if (e instanceof EOFException) {
+                // the server has unexpectedly closed the connection
+                System.out.println("*** Error: The server has unexpectedly closed the connection! ***");
+            } else {
+                e.printStackTrace();
+            }
         } finally {
             // release the system's resources and clean up
             // before exiting

@@ -302,7 +302,7 @@ public class MailServer {
             } catch (IOException e) {
                 if (e instanceof EOFException) {
                     // the client has unexpectedly closed the connection
-                    System.out.println("*** Error: The client has unexpectedly closed the connection! ***");
+                    System.out.println("*** Error: A client has unexpectedly closed the connection! ***");
                 } else {
                     e.printStackTrace();
                 }
