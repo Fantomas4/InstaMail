@@ -1,18 +1,21 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class MailServer {
 
     private int handshakePort;
     private ArrayList<Account> accountList;
     private ServerSocket serverSocket = null;
-    private ArrayList<Thread> requestServiceThreads;
+    private boolean stopHandshakeListening;
 
     public MailServer(int port) {
-        System.out.println("DIAG: eftasa0");
+        System.out.println("*** Initializing Mail Server... ***");
+        stopHandshakeListening = false;
         handshakePort = port;
         accountList = new ArrayList<>();
         try {
@@ -24,6 +27,8 @@ public class MailServer {
 
             // *** FOR TESTING PURPOSES ONLY ***
 
+            new Thread(new exitButtonPressListeningThread()).start();
+
             handshakeListeningThread();
 
         } catch (IOException e) {
@@ -33,7 +38,7 @@ public class MailServer {
             // before exiting the Server
             try {
 
-                System.out.println("Server cleaning up...");
+                System.out.println("*** Server cleaning up... ***");
 
                 if (serverSocket != null) {
                     serverSocket.close();
@@ -48,10 +53,28 @@ public class MailServer {
 
     }
 
+    private class exitButtonPressListeningThread implements Runnable{
+
+        public void run() {
+            System.out.println("*** NOTE: Press enter anytime to shutdown the server and exit ***");
+            Scanner input = new Scanner(System.in);
+
+            // wait (block) until the user presses enter
+            input.nextLine();
+
+            stopHandshakeListening = true;
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void handshakeListeningThread() {
 
         try {
-            while (true) {
+            while (!stopHandshakeListening) {
                 // accept an incoming handshake from a new client,
                 // and create a new socket for this particular client
                 Socket serviceSocket = serverSocket.accept();
@@ -63,7 +86,14 @@ public class MailServer {
                 System.out.println("After thread creation in loop!");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+
+            if (e instanceof SocketException && stopHandshakeListening) {
+                // the user has pressed the exit key and the application
+                // must shutdown the server and then exit
+                System.out.println("*** The server will now terminate... ***");
+            } else {
+                e.printStackTrace();
+            }
         }
 
     }
@@ -474,6 +504,8 @@ public class MailServer {
 
         new MailServer(5678);
 
+        // System.exit(0) kills all threads and returns the 0 status code
+        System.exit(0);
     }
 
 }
