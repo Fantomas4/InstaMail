@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -11,16 +12,32 @@ public class MailClient {
 
     public MailClient(String ipAddr, int port) {
 
+        boolean connected = true;
+
         try {
             socket = new Socket(ipAddr, port);
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
             stopListening = false;
         } catch (IOException e) {
-            e.printStackTrace();
+            if (e instanceof ConnectException) {
+                System.out.println("*** Error: Failed to connect to the server! ***");
+                connected = false;
+            } else {
+                e.printStackTrace();
+            }
         }
 
-        run();
+        if (connected) {
+            // if the connection attempt
+            // to the server was successful
+            // execute the client communication
+            // protocol.
+            System.out.println("*** Connected to the Mail Server! ***\n");
+            run();
+        }
+
+
 
     }
 
@@ -168,7 +185,7 @@ public class MailClient {
             // before exiting
 
             try {
-                System.out.println("Client cleaning up...");
+                System.out.println("*** Client cleaning up... ***");
                 if (in != null) {
                     in.close();
                 }
