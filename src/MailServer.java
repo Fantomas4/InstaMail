@@ -73,6 +73,8 @@ public class MailServer {
 
     private void handshakeListeningThread() {
 
+        System.out.println("*** Server is up and running! ***");
+
         try {
             while (!stopHandshakeListening) {
                 // accept an incoming handshake from a new client,
@@ -502,7 +504,32 @@ public class MailServer {
 
     public static void main(String[] args) {
 
-        new MailServer(5678);
+        int userInput;
+        Scanner input = new Scanner(System.in);
+
+        System.out.print("\n\n");
+        System.out.print(" _____             _         ___  ___        _  _ \n" +
+                "|_   _|           | |        |  \\/  |       (_)| |\n" +
+                "  | |  _ __   ___ | |_  __ _ | .  . |  __ _  _ | |\n" +
+                "  | | | '_ \\ / __|| __|/ _` || |\\/| | / _` || || |\n" +
+                " _| |_| | | |\\__ \\| |_| (_| || |  | || (_| || || |\n" +
+                " \\___/|_| |_||___/ \\__|\\__,_|\\_|  |_/ \\__,_||_||_|\n");
+        System.out.println("===================================================\n");
+
+        while (true) {
+            System.out.println("> Enter the port you wish to be used by the server: ");
+            userInput = input.nextInt();
+
+            if (userInput >= 0) {
+                break;
+            } else {
+                System.out.println("> Error! Please enter a valid port number!");
+            }
+        }
+
+
+        // port 5678 is used for testing purposes.
+        new MailServer(userInput);
 
         // System.exit(0) kills all threads and returns the 0 status code
         System.exit(0);

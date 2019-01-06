@@ -208,7 +208,37 @@ public class MailClient {
 
     public static void main(String[] args) {
 
-        new MailClient("127.0.0.1", 5678);
+        int givenPort;
+        String givenIp;
+        Scanner input = new Scanner(System.in);
+
+        System.out.print("\n\n");
+        System.out.print(" _____             _         ___  ___        _  _ \n" +
+                "|_   _|           | |        |  \\/  |       (_)| |\n" +
+                "  | |  _ __   ___ | |_  __ _ | .  . |  __ _  _ | |\n" +
+                "  | | | '_ \\ / __|| __|/ _` || |\\/| | / _` || || |\n" +
+                " _| |_| | | |\\__ \\| |_| (_| || |  | || (_| || || |\n" +
+                " \\___/|_| |_||___/ \\__|\\__,_|\\_|  |_/ \\__,_||_||_|\n");
+        System.out.println("===================================================\n");
+
+        System.out.println("> Please enter the connection info of the server you want to connect to. ");
+
+        while (true) {
+            System.out.println("> Port: ");
+            givenPort = input.nextInt();
+
+            if (givenPort >= 0) {
+                break;
+            } else {
+                System.out.println("> Error! Please enter a valid port number!");
+            }
+        }
+
+        System.out.println("> IP address: ");
+        givenIp = input.next();
+
+        // localhost 127.0.0.1 is used for testing purposes.
+        new MailClient(givenIp, givenPort);
 
     }
 }
