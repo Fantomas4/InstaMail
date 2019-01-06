@@ -21,11 +21,26 @@ public class MailServer {
         try {
             serverSocket = new ServerSocket(handshakePort);
 
-            // *** FOR TESTING PURPOSES ONLY ***
+            // *** START - FOR TESTING PURPOSES ONLY ***
 
-            accountList.add(new Account("fantom", "gr"));
+            Account temp;
+            // Dummy account 1
+            temp = new Account("fantom", "1234");
+            temp.addNewEmail(new Email("pacman", "fantom", "Test mail 1!", "This is test mail 1 for Mr. fantom!"));
+            temp.addNewEmail(new Email("pacman", "fantom", "Test mail 2!", "This is test mail 2 for Mr. fantom!"));
+            temp.addNewEmail(new Email("pacman", "fantom", "Test mail 3!", "This is test mail 3 for Mr. fantom!"));
 
-            // *** FOR TESTING PURPOSES ONLY ***
+            accountList.add(temp);
+
+            // Dummy account 2
+            temp = new Account("pacman", "5678");
+            temp.addNewEmail(new Email("fantom", "pacman", "Test mail 1!", "This is test mail 1 for Mr. pacman!"));
+            temp.addNewEmail(new Email("fantom", "pacman", "Test mail 2!", "This is test mail 2 for Mr. pacman!"));
+            temp.addNewEmail(new Email("fantom", "pacman", "Test mail 3!", "This is test mail 3 for Mr. pacman!"));
+
+            accountList.add(temp);
+
+            // *** END - FOR TESTING PURPOSES ONLY ***
 
             new Thread(new exitButtonPressListeningThread()).start();
 
