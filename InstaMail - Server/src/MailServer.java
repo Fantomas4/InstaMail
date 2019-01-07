@@ -100,7 +100,7 @@ public class MailServer {
                 // it to the clientThreads list
 
                 new Thread(new RequestServiceThread(serviceSocket)).start();
-                System.out.println("After thread creation in loop!");
+                System.out.println("Received a new client connection!");
             }
         } catch (IOException e) {
 
@@ -153,7 +153,7 @@ public class MailServer {
                 while (!stopListening) {
                     // Receive message from client
                     receivedMsg = in.readUTF();
-                    System.out.println("DIAG: Start of loop receivedMsg: " + receivedMsg);
+//                    System.out.println("DIAG: Start of loop receivedMsg: " + receivedMsg);
 
                     switch (receivedMsg) {
 
@@ -182,8 +182,8 @@ public class MailServer {
                             String recvPassword = in.readUTF();
 
                             String result = login(recvUsername, recvPassword);
-                            System.out.println("DIAG: username: " + recvUsername + " password: " + recvPassword);
-                            System.out.println("DIAG: result: " + result);
+//                            System.out.println("DIAG: username: " + recvUsername + " password: " + recvPassword);
+//                            System.out.println("DIAG: result: " + result);
 
                             out.writeUTF("LOGIN_AUTH");
                             switch (result) {
