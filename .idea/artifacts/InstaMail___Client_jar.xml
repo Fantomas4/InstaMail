@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="InstaMail - Client:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/InstaMail___Client_jar</output-path>
+    <root id="archive" name="InstaMail - Client.jar">
+      <element id="module-output" name="InstaMail - Client" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/InstaMail - Client/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>

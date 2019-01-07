@@ -108,7 +108,7 @@ public class MailClient {
                     System.out.print(in.readUTF() + "\n");
 
                     // read the user's menu choice
-                    userChoice = input.next();
+                    userChoice = input.nextLine();
 
                     // send the appropriate request according to the user's menu choice
                     out.writeUTF(createRequestMessage(userChoice));
@@ -117,11 +117,11 @@ public class MailClient {
                     receivedMsg = in.readUTF();
                     if (receivedMsg.equals("Type your username:")) {
                         System.out.println(receivedMsg);
-                        out.writeUTF(input.next());
+                        out.writeUTF(input.nextLine());
                         out.flush();
                     } else if (receivedMsg.equals("Type your password:")) {
                         System.out.println(receivedMsg);
-                        out.writeUTF(input.next());
+                        out.writeUTF(input.nextLine());
                         out.flush();
                     } else {
                         // the receivedMsg contains the authentication result report
@@ -131,11 +131,11 @@ public class MailClient {
                     receivedMsg = in.readUTF();
                     if (receivedMsg.equals("Enter a username:")) {
                         System.out.println(receivedMsg);
-                        out.writeUTF(input.next());
+                        out.writeUTF(input.nextLine());
                         out.flush();
                     } else if (receivedMsg.equals("Enter a password:")) {
                         System.out.println(receivedMsg);
-                        out.writeUTF(input.next());
+                        out.writeUTF(input.nextLine());
                         out.flush();
                     } else {
                         // the receivedMsg contains the authentication result report
@@ -146,7 +146,8 @@ public class MailClient {
                     receivedMsg = in.readUTF();
                     if (receivedMsg.equals("Receiver:") || receivedMsg.equals("Subject:") || receivedMsg.equals("Main body:")) {
                         System.out.println(receivedMsg);
-                        out.writeUTF(input.next());
+
+                        out.writeUTF(input.nextLine());
                         out.flush();
                     } else {
                         // the receivedMsg contains the email composition result report
@@ -160,7 +161,7 @@ public class MailClient {
                     receivedMsg = in.readUTF();
                     if (receivedMsg.equals("Enter the email's ID:")) {
                         System.out.println(receivedMsg);
-                        out.writeUTF(input.next());
+                        out.writeUTF(input.nextLine());
                         out.flush();
                     } else {
                         // the receivedMsg contains the complete email content
@@ -230,7 +231,7 @@ public class MailClient {
 
         while (true) {
             System.out.println("> Port: ");
-            givenPort = input.nextInt();
+            givenPort = Integer.parseInt(input.nextLine());
 
             if (givenPort >= 0) {
                 break;
@@ -240,7 +241,7 @@ public class MailClient {
         }
 
         System.out.println("> IP address: ");
-        givenIp = input.next();
+        givenIp = input.nextLine();
 
         // localhost 127.0.0.1 is used for testing purposes.
         new MailClient(givenIp, givenPort);
