@@ -21,11 +21,26 @@ public class MailServer {
         try {
             serverSocket = new ServerSocket(handshakePort);
 
-            // *** FOR TESTING PURPOSES ONLY ***
+            // *** START - FOR TESTING PURPOSES ONLY ***
 
-            accountList.add(new Account("fantom", "gr"));
+            Account temp;
+            // Dummy account 1
+            temp = new Account("fantom", "1234");
+            temp.addNewEmail(new Email("pacman", "fantom", "Test mail 1!", "This is test mail 1 for Mr. fantom!"));
+            temp.addNewEmail(new Email("pacman", "fantom", "Test mail 2!", "This is test mail 2 for Mr. fantom!"));
+            temp.addNewEmail(new Email("pacman", "fantom", "Test mail 3!", "This is test mail 3 for Mr. fantom!"));
 
-            // *** FOR TESTING PURPOSES ONLY ***
+            accountList.add(temp);
+
+            // Dummy account 2
+            temp = new Account("pacman", "5678");
+            temp.addNewEmail(new Email("fantom", "pacman", "Test mail 1!", "This is test mail 1 for Mr. pacman!"));
+            temp.addNewEmail(new Email("fantom", "pacman", "Test mail 2!", "This is test mail 2 for Mr. pacman!"));
+            temp.addNewEmail(new Email("fantom", "pacman", "Test mail 3!", "This is test mail 3 for Mr. pacman!"));
+
+            accountList.add(temp);
+
+            // *** END - FOR TESTING PURPOSES ONLY ***
 
             new Thread(new exitButtonPressListeningThread()).start();
 
@@ -72,6 +87,8 @@ public class MailServer {
     }
 
     private void handshakeListeningThread() {
+
+        System.out.println("*** Server is up and running! ***");
 
         try {
             while (!stopHandshakeListening) {
@@ -315,6 +332,14 @@ public class MailServer {
                             exit();
 
                             break;
+
+                        case "BAD_REQUEST":
+                            // the received request has a bad format
+                            out.writeUTF("ERROR_BAD_REQUEST");
+                            out.writeUTF("Wrong entry! Please try again.");
+                            out.writeUTF("END_OF_REQUEST_HANDLING");
+
+                            break;
                     }
                 }
             } catch (IOException e) {
@@ -502,7 +527,32 @@ public class MailServer {
 
     public static void main(String[] args) {
 
-        new MailServer(5678);
+        int userInput;
+        Scanner input = new Scanner(System.in);
+
+        System.out.print("\n\n");
+        System.out.print(" _____             _         ___  ___        _  _ \n" +
+                "|_   _|           | |        |  \\/  |       (_)| |\n" +
+                "  | |  _ __   ___ | |_  __ _ | .  . |  __ _  _ | |\n" +
+                "  | | | '_ \\ / __|| __|/ _` || |\\/| | / _` || || |\n" +
+                " _| |_| | | |\\__ \\| |_| (_| || |  | || (_| || || |\n" +
+                " \\___/|_| |_||___/ \\__|\\__,_|\\_|  |_/ \\__,_||_||_|\n");
+        System.out.println("===================================================\n");
+
+        while (true) {
+            System.out.println("> Enter the port you wish to be used by the server: ");
+            userInput = input.nextInt();
+
+            if (userInput >= 0) {
+                break;
+            } else {
+                System.out.println("> Error! Please enter a valid port number!");
+            }
+        }
+
+
+        // port 5678 is used for testing purposes.
+        new MailServer(userInput);
 
         // System.exit(0) kills all threads and returns the 0 status code
         System.exit(0);
