@@ -3,7 +3,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class MailServer {
@@ -258,7 +257,7 @@ public class MailServer {
                             break;
 
                         case "GET_EMAILS_PREVIEW_REQUEST":
-                            ArrayList<String> previewEntries = getEmailsPreview(loggedInUser);
+                            ArrayList<String> previewEntries = showEmails(loggedInUser);
                             StringBuilder sb = new StringBuilder();
 
                             // convert the ArrayList<String> to a String containing
@@ -286,7 +285,7 @@ public class MailServer {
                             out.writeUTF("Enter the email's ID:");
                             emailId = in.readUTF();
 
-                            String emailResult = getEmail(emailId, loggedInUser);
+                            String emailResult = readEmail(emailId, loggedInUser);
 
                             out.writeUTF("COMPLETE_EMAIL_CONTENT");
                             if (emailResult.equals("ERROR_INVALID_EMAIL_ID")) {
@@ -458,7 +457,7 @@ public class MailServer {
 
         }
 
-        private ArrayList<String> getEmailsPreview(Account user) {
+        private ArrayList<String> showEmails(Account user) {
             // replaces the showEmails function from the exercise description
             ArrayList<String> emailDescriptions = new ArrayList<>();
 
@@ -488,7 +487,7 @@ public class MailServer {
 
         }
 
-        private String getEmail(String emailId, Account user) {
+        private String readEmail(String emailId, Account user) {
             // replaces the readEMail function from the exercise description
             int targetId = Integer.parseInt(emailId);
 
