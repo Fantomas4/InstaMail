@@ -72,6 +72,9 @@ public class MailClient {
             case "LogOut":
                 requestMsg =  "LOGOUT_REQUEST";
                 break;
+            default:
+                requestMsg = "BAD_REQUEST";
+                break;
         }
 
         return requestMsg;
@@ -169,6 +172,8 @@ public class MailClient {
                     // asks the client to gracefully terminate its connection,
                     // while the server does the same.
                     stopListening = true;
+                } else if (receivedMsg.equals("ERROR_BAD_REQUEST")) {
+                    System.out.println(in.readUTF());
                 }
 
             }

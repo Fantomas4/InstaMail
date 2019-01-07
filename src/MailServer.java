@@ -332,6 +332,14 @@ public class MailServer {
                             exit();
 
                             break;
+
+                        case "BAD_REQUEST":
+                            // the received request has a bad format
+                            out.writeUTF("ERROR_BAD_REQUEST");
+                            out.writeUTF("Wrong entry! Please try again.");
+                            out.writeUTF("END_OF_REQUEST_HANDLING");
+
+                            break;
                     }
                 }
             } catch (IOException e) {
