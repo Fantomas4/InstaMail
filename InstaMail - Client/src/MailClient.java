@@ -227,21 +227,30 @@ public class MailClient {
                 " \\___/|_| |_||___/ \\__|\\__,_|\\_|  |_/ \\__,_||_||_|\n");
         System.out.println("===================================================\n");
 
-        System.out.println("> Please enter the connection info of the server you want to connect to. ");
+        if (args.length == 0) {
+            // user provided no arguments during program execution
+            System.out.println("> Please enter the connection info of the server you want to connect to. ");
 
-        while (true) {
-            System.out.println("> Port: ");
-            givenPort = Integer.parseInt(input.nextLine());
+            while (true) {
+                System.out.println("> Port: ");
+                givenPort = Integer.parseInt(input.nextLine());
 
-            if (givenPort >= 0) {
-                break;
-            } else {
-                System.out.println("> Error! Please enter a valid port number!");
+                if (givenPort >= 0) {
+                    break;
+                } else {
+                    System.out.println("> Error! Please enter a valid port number!");
+                }
             }
+
+            System.out.println("> IP address: ");
+            givenIp = input.nextLine();
+        } else {
+            System.out.println("> The client will attempt to connect to the IP address and port that were provided as arguments during program execution!\n");
+            givenIp = args[0];
+            givenPort = Integer.parseInt(args[1]);
         }
 
-        System.out.println("> IP address: ");
-        givenIp = input.nextLine();
+
 
         // localhost 127.0.0.1 is used for testing purposes.
         new MailClient(givenIp, givenPort);

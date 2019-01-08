@@ -526,7 +526,7 @@ public class MailServer {
 
     public static void main(String[] args) {
 
-        int userInput;
+        int givenPort;
         Scanner input = new Scanner(System.in);
 
         System.out.print("\n\n");
@@ -538,20 +538,28 @@ public class MailServer {
                 " \\___/|_| |_||___/ \\__|\\__,_|\\_|  |_/ \\__,_||_||_|\n");
         System.out.println("===================================================\n");
 
-        while (true) {
-            System.out.println("> Enter the port you wish to be used by the server: ");
-            userInput = input.nextInt();
+        if (args.length == 0) {
+            // user provided no arguments during program execution
+            while (true) {
+                System.out.println("> Enter the port you wish to be used by the server: ");
+                givenPort = input.nextInt();
 
-            if (userInput >= 0) {
-                break;
-            } else {
-                System.out.println("> Error! Please enter a valid port number!");
+                if (givenPort >= 0) {
+                    break;
+                } else {
+                    System.out.println("> Error! Please enter a valid port number!");
+                }
             }
+        } else {
+            System.out.println("> The server will be hosted at the port that was provided as an argument during program execution!\n");
+            givenPort = Integer.parseInt(args[0]);
         }
 
 
+
+
         // port 5678 is used for testing purposes.
-        new MailServer(userInput);
+        new MailServer(givenPort);
 
         // System.exit(0) kills all threads and returns the 0 status code
         System.exit(0);
