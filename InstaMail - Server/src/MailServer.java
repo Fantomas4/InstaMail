@@ -3,7 +3,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class MailServer {
@@ -100,7 +99,7 @@ public class MailServer {
                 // it to the clientThreads list
 
                 new Thread(new RequestServiceThread(serviceSocket)).start();
-                System.out.println("After thread creation in loop!");
+                System.out.println("Received a new client connection!");
             }
         } catch (IOException e) {
 
@@ -153,7 +152,7 @@ public class MailServer {
                 while (!stopListening) {
                     // Receive message from client
                     receivedMsg = in.readUTF();
-                    System.out.println("DIAG: Start of loop receivedMsg: " + receivedMsg);
+//                    System.out.println("DIAG: Start of loop receivedMsg: " + receivedMsg);
 
                     switch (receivedMsg) {
 
@@ -182,8 +181,8 @@ public class MailServer {
                             String recvPassword = in.readUTF();
 
                             String result = login(recvUsername, recvPassword);
-                            System.out.println("DIAG: username: " + recvUsername + " password: " + recvPassword);
-                            System.out.println("DIAG: result: " + result);
+//                            System.out.println("DIAG: username: " + recvUsername + " password: " + recvPassword);
+//                            System.out.println("DIAG: result: " + result);
 
                             out.writeUTF("LOGIN_AUTH");
                             switch (result) {
@@ -258,7 +257,7 @@ public class MailServer {
                             break;
 
                         case "GET_EMAILS_PREVIEW_REQUEST":
-                            ArrayList<String> previewEntries = getEmailsPreview(loggedInUser);
+                            ArrayList<String> previewEntries = showEmails(loggedInUser);
                             StringBuilder sb = new StringBuilder();
 
                             // convert the ArrayList<String> to a String containing
@@ -286,7 +285,7 @@ public class MailServer {
                             out.writeUTF("Enter the email's ID:");
                             emailId = in.readUTF();
 
-                            String emailResult = getEmail(emailId, loggedInUser);
+                            String emailResult = readEmail(emailId, loggedInUser);
 
                             out.writeUTF("COMPLETE_EMAIL_CONTENT");
                             if (emailResult.equals("ERROR_INVALID_EMAIL_ID")) {
@@ -458,7 +457,7 @@ public class MailServer {
 
         }
 
-        private ArrayList<String> getEmailsPreview(Account user) {
+        private ArrayList<String> showEmails(Account user) {
             // replaces the showEmails function from the exercise description
             ArrayList<String> emailDescriptions = new ArrayList<>();
 
@@ -488,7 +487,7 @@ public class MailServer {
 
         }
 
-        private String getEmail(String emailId, Account user) {
+        private String readEmail(String emailId, Account user) {
             // replaces the readEMail function from the exercise description
             int targetId = Integer.parseInt(emailId);
 
@@ -527,7 +526,7 @@ public class MailServer {
 
     public static void main(String[] args) {
 
-        int userInput;
+        int givenPort;
         Scanner input = new Scanner(System.in);
 
         System.out.print("\n\n");
@@ -539,20 +538,28 @@ public class MailServer {
                 " \\___/|_| |_||___/ \\__|\\__,_|\\_|  |_/ \\__,_||_||_|\n");
         System.out.println("===================================================\n");
 
-        while (true) {
-            System.out.println("> Enter the port you wish to be used by the server: ");
-            userInput = input.nextInt();
+        if (args.length == 0) {
+            // user provided no arguments during program execution
+            while (true) {
+                System.out.println("> Enter the port you wish to be used by the server: ");
+                givenPort = input.nextInt();
 
-            if (userInput >= 0) {
-                break;
-            } else {
-                System.out.println("> Error! Please enter a valid port number!");
+                if (givenPort >= 0) {
+                    break;
+                } else {
+                    System.out.println("> Error! Please enter a valid port number!");
+                }
             }
+        } else {
+            System.out.println("> The server will be hosted at the port that was provided as an argument during program execution!\n");
+            givenPort = Integer.parseInt(args[0]);
         }
 
 
+
+
         // port 5678 is used for testing purposes.
-        new MailServer(userInput);
+        new MailServer(givenPort);
 
         // System.exit(0) kills all threads and returns the 0 status code
         System.exit(0);
